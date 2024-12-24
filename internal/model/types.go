@@ -2,17 +2,18 @@ package model
 
 // CourseInfo represents the general information about a course
 type CourseInfo struct {
-	Dept           string `json:"dept"`
-	Number         string `json:"number"`
-	Title          string `json:"title"`
-	Units          string `json:"units"`
-	Description    string `json:"description"`
-	Notes          string `json:"notes"`
-	Designation    string `json:"designation"`
-	DeliveryMethod string `json:"deliveryMethod"`
-	Prerequisites  string `json:"prerequisites"`
-	Corequisites   string `json:"corequisites"`
-	DegreeLevel    string `json:"degreeLevel"`
+	Dept           string   `json:"dept"`
+	Number         string   `json:"number"`
+	Title          string   `json:"title"`
+	Units          string   `json:"units"`
+	Description    string   `json:"description"`
+	Notes          string   `json:"notes"`
+	Designation    string   `json:"designation"`
+	DeliveryMethod string   `json:"deliveryMethod"`
+	Prerequisites  string   `json:"prerequisites"`
+	Corequisites   string   `json:"corequisites"`
+	DegreeLevel    string   `json:"degreeLevel"`
+	TermsOffered   []string `json:"termsOffered"`
 }
 
 // func CourseInfoFromDict(data map[string]interface{}) CourseInfo {
