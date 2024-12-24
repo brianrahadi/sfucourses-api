@@ -1,13 +1,18 @@
-package main
+package utils
 
 import (
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 
+	"github.com/brianrahadi/sfucourses-api/internal/model"
 	. "github.com/brianrahadi/sfucourses-api/internal/model"
+	mo "github.com/samber/mo"
+)
+
+const (
+	BaseURL = "http://www.sfu.ca/bin/wcm/course-outlines"
 )
 
 type DepartmentRes struct {
@@ -29,15 +34,8 @@ type OutlineRes struct {
 	Info CourseInfo `json:"info"`
 }
 
-const (
-	BaseURL        = "http://www.sfu.ca/bin/wcm/course-outlines"
-	ResultFilePath = "./json/outlines/outline.json"
-)
-
-var outlineMap map[string]CourseInfo = make(map[string]CourseInfo)
-
 // fetchAndDecode makes an HTTP GET request and decodes the JSON response
-func fetchAndDecode(url string, target interface{}) error {
+func FetchAndDecode(url string, target interface{}) error {
 	resp, err := http.Get(url)
 	if err != nil {
 		return fmt.Errorf("HTTP GET failed for %s: %w", url, err)
@@ -60,7 +58,7 @@ func fetchAndDecode(url string, target interface{}) error {
 func getDepartments(year string, term string) ([]DepartmentRes, error) {
 	url := fmt.Sprintf("%s?%s/%s", BaseURL, year, term)
 	var depts []DepartmentRes
-	err := fetchAndDecode(url, &depts)
+	err := FetchAndDecode(url, &depts)
 	return depts, err
 }
 
@@ -68,7 +66,7 @@ func getDepartments(year string, term string) ([]DepartmentRes, error) {
 func getCourses(year string, term string, dept string) ([]CourseRes, error) {
 	url := fmt.Sprintf("%s?%s/%s/%s", BaseURL, year, term, dept)
 	var courses []CourseRes
-	err := fetchAndDecode(url, &courses)
+	err := FetchAndDecode(url, &courses)
 	return courses, err
 }
 
@@ -76,7 +74,7 @@ func getCourses(year string, term string, dept string) ([]CourseRes, error) {
 func getSections(year string, term string, dept string, number string) ([]SectionRes, error) {
 	url := fmt.Sprintf("%s?%s/%s/%s/%s", BaseURL, year, term, dept, number)
 	var sections []SectionRes
-	err := fetchAndDecode(url, &sections)
+	err := FetchAndDecode(url, &sections)
 	return sections, err
 }
 
@@ -84,19 +82,27 @@ func getSections(year string, term string, dept string, number string) ([]Sectio
 func getCourseOutline(year string, term string, dept string, number string, section string) (OutlineRes, error) {
 	url := fmt.Sprintf("%s?%s/%s/%s/%s/%s", BaseURL, year, term, dept, number, section)
 	var outline OutlineRes
-	err := fetchAndDecode(url, &outline)
+	err := FetchAndDecode(url, &outline)
 	return outline, err
 }
 
-// processTerm handles all the fetching for a single term
-func processTerm(year string, term string) error {
+// getSectionDetail fetches the course outline for a given section
+func getSectionDetail(year string, term string, dept string, number string, section string) (SectionDetail, error) {
+	url := fmt.Sprintf("%s?%s/%s/%s/%s/%s", BaseURL, year, term, dept, number, section)
+	var sectionDetail SectionDetail
+	err := FetchAndDecode(url, &sectionDetail)
+	return sectionDetail, err
+}
+
+// ProcessTerm handles all the fetching for a single term
+func ProcessTerm(year string, term string, courseMap mo.Either[map[string]model.CourseInfo, map[string][]model.SectionDetail]) error {
 	depts, err := getDepartments(year, term)
 	if err != nil {
 		return fmt.Errorf("error getting departments for term %s: %w", term, err)
 	}
 
 	for _, dept := range depts {
-		if err := processDepartment(year, term, dept.Value); err != nil {
+		if err := processDepartment(year, term, dept.Value, courseMap); err != nil {
 			fmt.Printf("Error processing department %s: %v\n", dept.Value, err)
 			continue
 		}
@@ -106,31 +112,57 @@ func processTerm(year string, term string) error {
 }
 
 // processDepartment handles all the fetching for a single department
-func processDepartment(year string, term string, dept string) error {
+func processDepartment(year string, term string, dept string, courseMap mo.Either[map[string]model.CourseInfo, map[string][]model.SectionDetail]) error {
 	courses, err := getCourses(year, term, dept)
 	if err != nil {
 		return fmt.Errorf("error getting courses for department %s: %w", dept, err)
 	}
 
-	for _, course := range courses {
-		courseKey := fmt.Sprintf("%s %s", dept, course.Value)
-		courseInfo, ok := outlineMap[courseKey]
-		courseInfo.TermsOffered = append(outlineMap[courseKey].TermsOffered, fmt.Sprintf("%s %s", term, year))
-		outlineMap[courseKey] = courseInfo
-		if ok {
-			continue
+	if courseMap.IsLeft() {
+		outlineMap := courseMap.LeftOrEmpty()
+		for _, course := range courses {
+			courseKey := fmt.Sprintf("%s %s", dept, course.Value)
+			courseInfo, ok := outlineMap[courseKey]
+			courseInfo.TermsOffered = append(outlineMap[courseKey].TermsOffered, fmt.Sprintf("%s %s", term, year))
+			outlineMap[courseKey] = courseInfo
+
+			if ok {
+				continue
+			}
+
+			if err := processCourseOutline(year, term, dept, course.Value, outlineMap); err != nil {
+				fmt.Printf("Error processing course %s: %v\n", course.Value, err)
+				continue
+			}
 		}
-		if err := processCourse(year, term, dept, course.Value); err != nil {
-			fmt.Printf("Error processing course %s: %v\n", course.Value, err)
-			continue
-		}
+		return nil
 	}
+
+	// sectionDetailsMap := courseMap.RightOrEmpty()
+
+	// for _, course := range courses {
+	// 	for _, course := range courses {
+	// 		courseKey := fmt.Sprintf("%s %s", dept, course.Value)
+	// 		sectionDetails, ok := sectionDetailsMap[courseKey]
+
+	// 		println("HHELL")
+	// 		if ok {
+	// 			continue
+	// 		}
+
+	// 		if err := processCourseOutline(year, term, dept, course.Value, outlineMap); err != nil {
+	// 			fmt.Printf("Error processing course %s: %v\n", course.Value, err)
+	// 			continue
+	// 		}
+	// 	}
+	// 	return nil
+	// }
 
 	return nil
 }
 
-// processCourse handles all the fetching for a single course
-func processCourse(year string, term string, dept string, number string) error {
+// processCourseOutline handles all the fetching for a single course
+func processCourseOutline(year string, term string, dept string, number string, outlineMap map[string]model.CourseInfo) error {
 	sections, err := getSections(year, term, dept, number)
 	if err != nil {
 		return fmt.Errorf("error getting sections for course %s: %w", number, err)
@@ -146,39 +178,10 @@ func processCourse(year string, term string, dept string, number string) error {
 	}
 
 	courseKey := fmt.Sprintf("%s %s", dept, number)
+	outline.Info.TermsOffered = outlineMap[courseKey].TermsOffered
 	outlineMap[courseKey] = outline.Info
 
 	// Process the outline as needed
 	fmt.Printf("Processed outline of %s %s\n", dept, number)
 	return nil
-}
-
-func main() {
-	terms := [][]string{
-		{"2025", "spring"}, {"2024", "fall"}, {"2024", "summer"},
-		{"2024", "spring"}, {"2023", "fall"}, {"2023", "summer"},
-		{"2023", "spring"},
-	}
-
-	for _, term := range terms {
-		if err := processTerm(term[0], term[1]); err != nil {
-			fmt.Printf("Error processing term %s: %v\n", term, err)
-			continue
-		}
-	}
-
-	jsonData, err := json.Marshal(outlineMap)
-	if err != nil {
-		fmt.Printf("Error marshaling to JSON: %v\n", err)
-		return
-	}
-
-	// Write to file
-	err = os.WriteFile(ResultFilePath, jsonData, 0644)
-	if err != nil {
-		fmt.Printf("Error writing to file: %v\n", err)
-		return
-	}
-
-	fmt.Printf("Successfully wrote course data to %s\n", ResultFilePath)
 }

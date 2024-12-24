@@ -16,6 +16,40 @@ type CourseInfo struct {
 	TermsOffered   []string `json:"termsOffered"`
 }
 
+type SectionInfo struct {
+	Name           string `json:"name"`           // CMPT 225 D100
+	Term           string `json:"term"`           // Fall 2024
+	Dept           string `json:"dept"`           // CMPT
+	Number         string `json:"number"`         // 225
+	Section        string `json:"section"`        // D100
+	OutlinePath    string `json:"outlinePath"`    // 2024/fall/cmpt/225/d100
+	DeliveryMethod string `json:"deliveryMethod"` // In Person
+	ClassNumber    string `json:"classNumber"`    // 6327
+}
+
+type SectionInstructor struct {
+	Name  string `json:"name"` // John Doe
+	Email string `json:"email"`
+}
+
+type SectionSchedule struct {
+	StartDate   string `json:"startDate"`
+	EndDate     string `json:"endDate"`
+	Campus      string `json:"campus"`
+	Days        string `json:"days"`
+	StartTime   string `json:"startTime"`
+	EndTime     string `json:"endTime"`
+	SectionCode string `json:"sectionCode"`
+	IsExam      bool   `json:"isExam"`
+}
+
+type SectionDetail struct {
+	Info           SectionInfo       `json:"info"`
+	Instructor     SectionInstructor `json:"instructor"`
+	CourseSchedule []SectionSchedule `json:"courseSchedule"`
+	ExamSchedule   []SectionSchedule `json:"examSchedule"`
+}
+
 // func CourseInfoFromDict(data map[string]interface{}) CourseInfo {
 // 	return CourseInfo{
 // 		Dept:           stringValue(data["dept"]),
