@@ -11,11 +11,11 @@ import (
 	. "github.com/brianrahadi/sfucourses-api/internal/model"
 	utils "github.com/brianrahadi/sfucourses-api/scripts"
 	"github.com/samber/lo"
-	mo "github.com/samber/mo"
+	"github.com/samber/mo"
 )
 
 var ResultFilePath = fmt.Sprintf("./json/schedules/%s-%s.json", termFetched[0], termFetched[1])
-var termFetched = []string{"2024", "spring"}
+var termFetched = []string{"2025", "spring"}
 
 func main() {
 	var courseWithSectionDetailsMapContainer = mo.Right[map[string]CourseInfo](make(map[string]CourseWithSectionDetails))
@@ -39,6 +39,7 @@ func main() {
 		}
 		return strings.Compare(a.Number, b.Number)
 	})
+
 	jsonData, err := json.Marshal(courseWithSectionDetails)
 	if err != nil {
 		fmt.Printf("Error marshaling to JSON: %v\n", err)
