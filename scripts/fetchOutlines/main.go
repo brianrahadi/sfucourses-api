@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	ResultFilePath = "./json/outlines/outline2.json"
+	ResultFilePath = "./json/outlines/outline.json"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 		{"2025", "spring"}, {"2024", "fall"}, {"2024", "summer"},
 		{"2024", "spring"},
 	}
-	var outlineMapContainer = mo.Left[map[string]model.CourseInfo, map[string][]model.SectionDetail](make(map[string]model.CourseInfo))
+	var outlineMapContainer = mo.Left[map[string]model.CourseInfo, map[string]model.CourseWithSectionDetails](make(map[string]model.CourseInfo))
 
 	for _, term := range terms {
 		if err := utils.ProcessTerm(term[0], term[1], outlineMapContainer); err != nil {
@@ -33,22 +33,22 @@ func main() {
 	}
 
 	outlineMap := outlineMapContainer.LeftOrEmpty()
-	outlineVals := slices.Collect(maps.Values(outlineMap))
+	outlines := slices.Collect(maps.Values(outlineMap))
 
 	// remove bad data
-	outlineVals = lo.Filter(outlineVals, func(course model.CourseInfo, _ int) bool {
+	outlines = lo.Filter(outlines, func(course model.CourseInfo, _ int) bool {
 		return course.Dept != "" && course.Number != ""
 	})
 
 	// sort by department and number
-	slices.SortFunc(outlineVals, func(a model.CourseInfo, b model.CourseInfo) int {
+	slices.SortFunc(outlines, func(a model.CourseInfo, b model.CourseInfo) int {
 		if a.Dept != b.Dept {
 			return strings.Compare(a.Dept, b.Dept)
 		}
 		return strings.Compare(a.Number, b.Number)
 	})
 
-	jsonData, err := json.Marshal(outlineVals)
+	jsonData, err := json.Marshal(outlines)
 	if err != nil {
 		fmt.Printf("Error marshaling to JSON: %v\n", err)
 		return

@@ -41,22 +41,28 @@ type SectionSchedule struct {
 	SectionCode string `json:"sectionCode"`
 }
 
+// for json read from sfu courses API
 type SectionDetailRaw struct {
-	Info            SectionInfo         `json:"info"`
-	Instructors     []SectionInstructor `json:"instructor"`
-	CourseSchedules []SectionSchedule   `json:"courseSchedule"`
+	Info           SectionInfo         `json:"info"`
+	Instructor     []SectionInstructor `json:"instructor"`     // singular for parsing
+	CourseSchedule []SectionSchedule   `json:"courseSchedule"` //
 }
 
 type SectionDetail struct {
-	Dept            string              `json:"dept"`           // CMPT
-	Number          string              `json:"number"`         // 225
-	Section         string              `json:"section"`        // D100
-	Term            string              `json:"term"`           // Fall 2024
-	OutlinePath     string              `json:"outlinePath"`    // 2024/fall/cmpt/225/d100
-	DeliveryMethod  string              `json:"deliveryMethod"` // In Person
-	ClassNumber     string              `json:"classNumber"`    // 6327
-	Instructors     []SectionInstructor `json:"instructor"`
-	CourseSchedules []SectionSchedule   `json:"courseSchedule"`
+	Section        string              `json:"section"`        // D100
+	OutlinePath    string              `json:"outlinePath"`    // 2024/fall/cmpt/225/d100
+	DeliveryMethod string              `json:"deliveryMethod"` // In Person
+	ClassNumber    string              `json:"classNumber"`    // 6327
+	Instructors    []SectionInstructor `json:"instructors"`
+	Schedules      []SectionSchedule   `json:"schedules"`
+}
+
+// for json write
+type CourseWithSectionDetails struct {
+	Dept           string          `json:"dept"`   // CMPT
+	Number         string          `json:"number"` // 225
+	Term           string          `json:"term"`   // Fall 2024
+	SectionDetails []SectionDetail `json:"sections"`
 }
 
 // func CourseInfoFromDict(data map[string]interface{}) CourseInfo {
