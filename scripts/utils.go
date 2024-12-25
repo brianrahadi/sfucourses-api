@@ -34,7 +34,7 @@ type SectionRes struct {
 }
 
 type OutlineRes struct {
-	Info CourseInfo `json:"info"`
+	Info CourseOutline `json:"info"`
 }
 
 // fetchAndDecode makes an HTTP GET request and decodes the JSON response
@@ -98,7 +98,7 @@ func getSectionDetailRaw(year string, term string, dept string, number string, s
 }
 
 // ProcessTerm handles all the fetching for a single term
-func ProcessTerm(year string, term string, courseMap mo.Either[map[string]model.CourseInfo, map[string]model.CourseWithSectionDetails]) error {
+func ProcessTerm(year string, term string, courseMap mo.Either[map[string]model.CourseOutline, map[string]model.CourseWithSectionDetails]) error {
 	depts, err := getDepartments(year, term)
 	if err != nil {
 		return fmt.Errorf("error getting departments for term %s: %w", term, err)
@@ -115,7 +115,7 @@ func ProcessTerm(year string, term string, courseMap mo.Either[map[string]model.
 }
 
 // processDepartment handles all the fetching for a single department
-func processDepartment(year string, term string, dept string, courseMap mo.Either[map[string]model.CourseInfo, map[string]CourseWithSectionDetails]) error {
+func processDepartment(year string, term string, dept string, courseMap mo.Either[map[string]model.CourseOutline, map[string]CourseWithSectionDetails]) error {
 	courses, err := getCourses(year, term, dept)
 	if err != nil {
 		return fmt.Errorf("error getting courses for department %s: %w", dept, err)
@@ -156,7 +156,7 @@ func processDepartment(year string, term string, dept string, courseMap mo.Eithe
 }
 
 // processCourseOutline handles all the fetching for a single course
-func processCourseOutline(year string, term string, dept string, number string, outlineMap map[string]model.CourseInfo) error {
+func processCourseOutline(year string, term string, dept string, number string, outlineMap map[string]model.CourseOutline) error {
 	sections, err := getSections(year, term, dept, number)
 	if err != nil {
 		return fmt.Errorf("error getting sections for course %s: %w", number, err)
