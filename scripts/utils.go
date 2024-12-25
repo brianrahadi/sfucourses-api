@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/brianrahadi/sfucourses-api/internal/model"
 	. "github.com/brianrahadi/sfucourses-api/internal/model"
@@ -89,8 +91,9 @@ func getCourseOutline(year string, term string, dept string, number string, sect
 // getSectionDetail fetches the course outline for a given section
 func getSectionDetail(year string, term string, dept string, number string, section string) (SectionDetail, error) {
 	url := fmt.Sprintf("%s?%s/%s/%s/%s/%s", BaseURL, year, term, dept, number, section)
-	var sectionDetail SectionDetail
-	err := FetchAndDecode(url, &sectionDetail)
+	var sectionDetailRaw SectionDetailRaw
+	err := FetchAndDecode(url, &sectionDetailRaw)
+	sectionDetail := toSectionDetail(sectionDetailRaw)
 	return sectionDetail, err
 }
 
@@ -106,6 +109,7 @@ func ProcessTerm(year string, term string, courseMap mo.Either[map[string]model.
 			fmt.Printf("Error processing department %s: %v\n", dept.Value, err)
 			continue
 		}
+		break
 	}
 
 	return nil
@@ -123,7 +127,11 @@ func processDepartment(year string, term string, dept string, courseMap mo.Eithe
 		for _, course := range courses {
 			courseKey := fmt.Sprintf("%s %s", dept, course.Value)
 			courseInfo, ok := outlineMap[courseKey]
-			courseInfo.TermsOffered = append(outlineMap[courseKey].TermsOffered, fmt.Sprintf("%s %s", term, year))
+
+			r, size := utf8.DecodeRuneInString(term)
+			capitalizedTerm := string(unicode.ToUpper(r)) + term[size:]
+
+			courseInfo.Terms = append(outlineMap[courseKey].Terms, fmt.Sprintf("%s %s", capitalizedTerm, year))
 			outlineMap[courseKey] = courseInfo
 
 			if ok {
@@ -137,26 +145,14 @@ func processDepartment(year string, term string, dept string, courseMap mo.Eithe
 		}
 		return nil
 	}
-
-	// sectionDetailsMap := courseMap.RightOrEmpty()
-
-	// for _, course := range courses {
-	// 	for _, course := range courses {
-	// 		courseKey := fmt.Sprintf("%s %s", dept, course.Value)
-	// 		sectionDetails, ok := sectionDetailsMap[courseKey]
-
-	// 		println("HHELL")
-	// 		if ok {
-	// 			continue
-	// 		}
-
-	// 		if err := processCourseOutline(year, term, dept, course.Value, outlineMap); err != nil {
-	// 			fmt.Printf("Error processing course %s: %v\n", course.Value, err)
-	// 			continue
-	// 		}
-	// 	}
-	// 	return nil
-	// }
+	sectionDetailsMap := courseMap.RightOrEmpty()
+	for _, course := range courses {
+		if err := processSectionDetails(year, term, dept, course.Value, sectionDetailsMap); err != nil {
+			fmt.Printf("Error processing course %s: %v\n", course.Value, err)
+			continue
+		}
+		break
+	}
 
 	return nil
 }
@@ -169,6 +165,7 @@ func processCourseOutline(year string, term string, dept string, number string, 
 	}
 
 	if len(sections) == 0 {
+		fmt.Printf("No outline found for %s %s\n", dept, number)
 		return nil
 	}
 
@@ -178,10 +175,44 @@ func processCourseOutline(year string, term string, dept string, number string, 
 	}
 
 	courseKey := fmt.Sprintf("%s %s", dept, number)
-	outline.Info.TermsOffered = outlineMap[courseKey].TermsOffered
+	outline.Info.Terms = outlineMap[courseKey].Terms
 	outlineMap[courseKey] = outline.Info
 
 	// Process the outline as needed
 	fmt.Printf("Processed outline of %s %s\n", dept, number)
 	return nil
+}
+
+func processSectionDetails(year string, term string, dept string, number string, sectionDetailsMap map[string][]model.SectionDetail) error {
+	sections, err := getSections(year, term, dept, number)
+	if err != nil {
+		return fmt.Errorf("error getting sections for course %s: %w", number, err)
+	}
+
+	for _, section := range sections {
+		sectionDetail, err := getSectionDetail(year, term, dept, number, section.Value)
+		if err != nil {
+			fmt.Printf("error getting outline for section %s: %v", sections[0].Value, err)
+			continue
+		}
+		courseKey := fmt.Sprintf("%s %s", dept, number)
+		sectionDetailsMap[courseKey] = append(sectionDetailsMap[courseKey], sectionDetail)
+	}
+
+	fmt.Printf("Processed section details for %s %s %s %s\n", dept, number, term, year)
+	return nil
+}
+
+func toSectionDetail(sectionDetailRaw SectionDetailRaw) SectionDetail {
+	var sectionDetail SectionDetail
+	sectionDetail.CourseSchedules = sectionDetailRaw.CourseSchedules
+	sectionDetail.Instructors = sectionDetailRaw.Instructors
+	sectionDetail.Dept = sectionDetailRaw.Info.Dept
+	sectionDetail.Number = sectionDetailRaw.Info.Number
+	sectionDetail.Section = sectionDetailRaw.Info.Section
+	sectionDetail.Term = sectionDetailRaw.Info.Term
+	sectionDetail.OutlinePath = sectionDetailRaw.Info.OutlinePath
+	sectionDetail.DeliveryMethod = sectionDetailRaw.Info.DeliveryMethod
+	sectionDetail.ClassNumber = sectionDetailRaw.Info.ClassNumber
+	return sectionDetail
 }
