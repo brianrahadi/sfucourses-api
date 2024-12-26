@@ -1,7 +1,6 @@
 package env
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -10,9 +9,12 @@ import (
 )
 
 func GetString(key, fallback string) string {
+	if os.Getenv("ENV") == "production" {
+		return os.Getenv(key)
+	}
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println("Error loading .env file")
+		log.Fatal("Error loading .env file")
 		return fallback
 	}
 	val := os.Getenv(key)
@@ -23,6 +25,15 @@ func GetString(key, fallback string) string {
 }
 
 func GetInt(key string, fallback int) int {
+	if os.Getenv("ENV") == "production" {
+		val := os.Getenv(key)
+		valAsInt, err := strconv.Atoi(val)
+		if err != nil {
+			log.Fatal("Trouble loading int production environment - %s", key)
+			return fallback
+		}
+		return valAsInt
+	}
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
