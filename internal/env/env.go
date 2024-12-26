@@ -29,7 +29,7 @@ func GetInt(key string, fallback int) int {
 		val := os.Getenv(key)
 		valAsInt, err := strconv.Atoi(val)
 		if err != nil {
-			log.Fatal("Trouble loading int production environment - %s", key)
+			log.Fatal("Trouble loading int production environment - %v", key)
 			return fallback
 		}
 		return valAsInt

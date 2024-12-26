@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	. "github.com/brianrahadi/sfucourses-api/internal/model"
+	"github.com/brianrahadi/sfucourses-api/internal/model"
 	utils "github.com/brianrahadi/sfucourses-api/scripts"
 	"github.com/samber/lo"
 	"github.com/samber/mo"
@@ -26,7 +26,7 @@ func main() {
 
 	resultFilePath := fmt.Sprintf("./internal/store/json/schedules/%s-%s.json", year, term)
 
-	var courseWithSectionDetailsMapContainer = mo.Right[map[string]CourseOutline](make(map[string]CourseWithSectionDetails))
+	var courseWithSectionDetailsMapContainer = mo.Right[map[string]model.CourseOutline](make(map[string]model.CourseWithSectionDetails))
 
 	if err := utils.ProcessTerm(year, term, courseWithSectionDetailsMapContainer); err != nil {
 		fmt.Printf("Error processing term %s %s: %v\n", year, term, err)
@@ -37,12 +37,12 @@ func main() {
 	courseWithSectionDetails := slices.Collect(maps.Values(courseWithSectionDetailsMap))
 
 	// remove bad data
-	courseWithSectionDetails = lo.Filter(courseWithSectionDetails, func(courseWithSectionDetails CourseWithSectionDetails, _ int) bool {
+	courseWithSectionDetails = lo.Filter(courseWithSectionDetails, func(courseWithSectionDetails model.CourseWithSectionDetails, _ int) bool {
 		return courseWithSectionDetails.Dept != "" && courseWithSectionDetails.Number != ""
 	})
 
 	// sort by department and number
-	slices.SortFunc(courseWithSectionDetails, func(a CourseWithSectionDetails, b CourseWithSectionDetails) int {
+	slices.SortFunc(courseWithSectionDetails, func(a model.CourseWithSectionDetails, b model.CourseWithSectionDetails) int {
 		if a.Dept != b.Dept {
 			return strings.Compare(a.Dept, b.Dept)
 		}
