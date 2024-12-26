@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	ResultFilePath = "./json/outlines/outline.json"
+	ResultFilePath = "./internal/store/json/outlines.json"
 )
 
 func main() {

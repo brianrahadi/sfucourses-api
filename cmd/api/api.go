@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/brianrahadi/sfucourses-api/internal/store"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 )
 
 type application struct {
@@ -28,20 +26,33 @@ type dbConfig struct {
 }
 
 func (app *application) mount() http.Handler {
-	r := chi.NewRouter()
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Logger)
+	mux := http.NewServeMux()
 
-	r.Use(middleware.Timeout(60 * time.Second))
+	// Middleware for recover and logging
+	mux.Handle("/", app.middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.NotFound(w, r)
+	})))
 
-	r.Route("/v1/rest", func(r chi.Router) {
-		r.Get("/health", app.healthCheckHandler)
+	mux.HandleFunc("GET /v1/rest/health", app.healthCheckHandler)
 
-		r.Route("/outlines", func(r chi.Router) {
-			r.Get("/all", app.getAllCourseOutlines)
-		})
-	})
-	return r
+	mux.HandleFunc("GET /v1/rest/outlines/all", app.getAllCourseOutlines)
+	mux.HandleFunc("GET /v1/rest/outlines/{dept}", app.getCourseOutlinesByDept)
+	mux.HandleFunc("GET /v1/rest/outlines/{dept}/{number}", app.getCourseOutlinesByDeptAndNumber)
+
+	return mux
+}
+
+func (app *application) middleware(next http.Handler) http.Handler {
+	return http.TimeoutHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if rec := recover(); rec != nil {
+				log.Printf("Recovered from panic: %v", rec)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			}
+		}()
+		log.Printf("%s %s %s", r.Method, r.URL.Path, r.RemoteAddr)
+		next.ServeHTTP(w, r)
+	}), 60*time.Second, "Request timed out")
 }
 
 func (app *application) run(mux http.Handler) error {

@@ -14,6 +14,8 @@ var (
 type Storage struct {
 	Outlines interface {
 		GetAll(context.Context) ([]CourseOutline, error)
+		GetByDept(context.Context, string) ([]CourseOutline, error)
+		GetByDeptAndNumber(context.Context, string, string) (CourseOutline, error)
 	}
 
 	// Schedules interface {
