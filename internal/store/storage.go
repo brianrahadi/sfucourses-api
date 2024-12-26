@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"errors"
+	"log"
 
 	. "github.com/brianrahadi/sfucourses-api/internal/model"
 )
@@ -18,13 +19,26 @@ type Storage struct {
 		GetByDeptAndNumber(context.Context, string, string) (CourseOutline, error)
 	}
 
-	// Schedules interface {
-	// 	GetByTerm(context.Context, year string, term string) ([]CourseWithSectionDetails)
-	// }
+	Courses interface {
+		GetByTerm(context.Context, string, string) ([]CourseWithSectionDetails, error)
+		GetByTermAndDept(context.Context, string, string, string) ([]CourseWithSectionDetails, error)
+		GetByTermAndDeptAndNumber(context.Context, string, string, string, string) (CourseWithSectionDetails, error)
+	}
 }
 
 func NewStorage() Storage {
+	outlines, err := NewOutlineStore()
+	if err != nil {
+		log.Fatal("Error loading outlines store")
+		outlines = &OutlineStore{}
+	}
+	courses, err := NewCourseStore()
+	if err != nil {
+		log.Fatal("Error loading courses store")
+		courses = &CoursesStore{}
+	}
 	return Storage{
-		Outlines: &OutlineStore{},
+		Outlines: outlines,
+		Courses:  courses,
 	}
 }

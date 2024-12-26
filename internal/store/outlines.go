@@ -12,26 +12,29 @@ import (
 	"github.com/samber/lo"
 )
 
-type OutlineStore struct {
-}
-
 //go:embed json/outlines.json
 var data []byte
 
-func (s *OutlineStore) GetAll(ctx context.Context) ([]CourseOutline, error) {
+type OutlineStore struct {
+	cachedOutlines []CourseOutline
+}
+
+func NewOutlineStore() (*OutlineStore, error) {
 	var outlines []CourseOutline
 	if err := json.Unmarshal(data, &outlines); err != nil {
-		return []CourseOutline{}, fmt.Errorf("error parsing JSON: %v", err)
+		return nil, fmt.Errorf("error parsing JSON: %v", err)
 	}
 
-	return outlines, nil
+	return &OutlineStore{cachedOutlines: outlines}, nil
+}
+
+func (s *OutlineStore) GetAll(ctx context.Context) ([]CourseOutline, error) {
+	// Simply return the cached outlines
+	return s.cachedOutlines, nil
 }
 
 func (s *OutlineStore) GetByDept(ctx context.Context, dept string) ([]CourseOutline, error) {
-	outlines, err := s.GetAll(ctx)
-	if err != nil {
-		return []CourseOutline{}, err
-	}
+	outlines := s.cachedOutlines
 	dept = strings.ToUpper(dept)
 	outlines = lo.Filter(outlines, func(outline CourseOutline, _ int) bool {
 		return outline.Dept == dept
@@ -45,10 +48,7 @@ func (s *OutlineStore) GetByDept(ctx context.Context, dept string) ([]CourseOutl
 }
 
 func (s *OutlineStore) GetByDeptAndNumber(ctx context.Context, dept string, number string) (CourseOutline, error) {
-	outlines, err := s.GetAll(ctx)
-	if err != nil {
-		return CourseOutline{}, err
-	}
+	outlines := s.cachedOutlines
 	dept = strings.ToUpper(dept)
 	number = strings.ToUpper(number)
 

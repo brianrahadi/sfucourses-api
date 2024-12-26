@@ -29,10 +29,10 @@ func (app *application) getAllCourseOutlines(w http.ResponseWriter, r *http.Requ
 }
 
 func (app *application) getCourseOutlinesByDept(w http.ResponseWriter, r *http.Request) {
-	deptID := r.PathValue("dept")
+	dept := r.PathValue("dept")
 	ctx := r.Context()
 
-	outlines, err := app.store.Outlines.GetByDept(ctx, deptID)
+	outlines, err := app.store.Outlines.GetByDept(ctx, dept)
 	if err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):
