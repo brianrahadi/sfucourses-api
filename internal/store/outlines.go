@@ -2,19 +2,23 @@ package store
 
 import (
 	"context"
-	"errors"
+	_ "embed"
+	"encoding/json"
+	"fmt"
 
 	. "github.com/brianrahadi/sfucourses-api/internal/model"
-	utils "github.com/brianrahadi/sfucourses-api/internal/utils"
 )
 
 type OutlineStore struct {
 }
 
+//go:embed json/outlines.json
+var data []byte
+
 func (s *OutlineStore) GetAll(ctx context.Context) ([]CourseOutline, error) {
-	outlines, err := utils.ReadCoursesFromJSON[[]CourseOutline]("./json/outlines/outline.json")
-	if err != nil {
-		return []CourseOutline{}, errors.New("not found")
+	var outlines []CourseOutline
+	if err := json.Unmarshal(data, &outlines); err != nil {
+		return outlines, fmt.Errorf("error parsing JSON: %v", err)
 	}
 
 	return outlines, nil
