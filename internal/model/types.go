@@ -64,3 +64,9 @@ type CourseWithSectionDetails struct {
 	Term           string          `json:"term"`   // Fall 2024
 	SectionDetails []SectionDetail `json:"sections"`
 }
+
+type CourseOutlinesResponse struct {
+	Data       []CourseOutline `json:"data"`
+	TotalCount int             `json:"total_count"`
+	NextURL    string          `json:"next_url,omitempty"`
+}

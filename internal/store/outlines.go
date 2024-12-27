@@ -10,6 +10,7 @@ import (
 
 	. "github.com/brianrahadi/sfucourses-api/internal/model"
 	"github.com/samber/lo"
+	"github.com/samber/mo"
 )
 
 //go:embed json/outlines.json
@@ -28,9 +29,24 @@ func NewOutlineStore() (*OutlineStore, error) {
 	return &OutlineStore{cachedOutlines: outlines}, nil
 }
 
-func (s *OutlineStore) GetAll(ctx context.Context) ([]CourseOutline, error) {
-	// Simply return the cached outlines
-	return s.cachedOutlines, nil
+func (s *OutlineStore) GetAll(ctx context.Context, limitOpt mo.Option[int], offsetOpt mo.Option[int]) ([]CourseOutline, int, error) {
+	totalCount := len(s.cachedOutlines)
+	if limitOpt.IsAbsent() && offsetOpt.IsAbsent() {
+		return s.cachedOutlines, totalCount, nil
+	}
+	limit := limitOpt.OrElse(totalCount)
+	offset := offsetOpt.OrElse(0)
+
+	if offset >= totalCount {
+		return []CourseOutline{}, 0, nil
+	}
+
+	end := offset + limit
+	if end > totalCount {
+		end = totalCount
+	}
+
+	return s.cachedOutlines[offset:end], totalCount, nil
 }
 
 func (s *OutlineStore) GetByDept(ctx context.Context, dept string) ([]CourseOutline, error) {

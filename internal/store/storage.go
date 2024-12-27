@@ -6,6 +6,7 @@ import (
 	"log"
 
 	. "github.com/brianrahadi/sfucourses-api/internal/model"
+	"github.com/samber/mo"
 )
 
 var (
@@ -14,7 +15,7 @@ var (
 
 type Storage struct {
 	Outlines interface {
-		GetAll(context.Context) ([]CourseOutline, error)
+		GetAll(context.Context, mo.Option[int], mo.Option[int]) ([]CourseOutline, int, error)
 		GetByDept(context.Context, string) ([]CourseOutline, error)
 		GetByDeptAndNumber(context.Context, string, string) (CourseOutline, error)
 	}
