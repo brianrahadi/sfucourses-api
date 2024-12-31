@@ -26,7 +26,7 @@ func formatTermCode(termCode string) string {
 
 func main() {
 	BASE_PATH := "./internal/store/json"
-	RESULT_PATH := BASE_PATH + "/outlines2.json"
+	RESULT_PATH := BASE_PATH + "/outlines.json"
 
 	outlines, err := internalUtils.ReadCoursesFromJSON[[]model.CourseOutline](BASE_PATH + "/outlines.json")
 	if err != nil {
@@ -61,9 +61,6 @@ func main() {
 			}
 			instructorNames = lo.Uniq(instructorNames)
 			instructorNames = lo.Filter(instructorNames, func(name string, _ int) bool { return name != "" })
-			if len(instructorNames) == 0 {
-				continue
-			}
 			newOffering.Instructors = instructorNames
 
 			outlineKey := fmt.Sprintf("%s-%s", course.Dept, course.Number)
