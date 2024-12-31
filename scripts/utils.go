@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
-	"unicode"
-	"unicode/utf8"
+	"os"
+	"slices"
+	"strings"
 
 	"github.com/brianrahadi/sfucourses-api/internal/model"
 	. "github.com/brianrahadi/sfucourses-api/internal/model"
@@ -125,13 +127,7 @@ func processDepartment(year string, term string, dept string, courseMap mo.Eithe
 		outlineMap := courseMap.LeftOrEmpty()
 		for _, course := range courses {
 			courseKey := fmt.Sprintf("%s %s", dept, course.Value)
-			courseInfo, ok := outlineMap[courseKey]
-
-			r, size := utf8.DecodeRuneInString(term)
-			capitalizedTerm := string(unicode.ToUpper(r)) + term[size:]
-
-			courseInfo.Terms = append(outlineMap[courseKey].Terms, fmt.Sprintf("%s %s", capitalizedTerm, year))
-			outlineMap[courseKey] = courseInfo
+			_, ok := outlineMap[courseKey]
 
 			if ok {
 				continue
@@ -173,7 +169,6 @@ func processCourseOutline(year string, term string, dept string, number string, 
 	}
 
 	courseKey := fmt.Sprintf("%s %s", dept, number)
-	outline.Info.Terms = outlineMap[courseKey].Terms
 	outlineMap[courseKey] = outline.Info
 
 	// Process the outline as needed
@@ -221,7 +216,7 @@ func toCourseWithSectionDetails(sectionDetailRawArr []SectionDetailRaw) mo.Optio
 	sectionDetails := lo.Map(sectionDetailRawArr, func(sectionDetailRaw SectionDetailRaw, _ int) SectionDetail {
 		instructors := sectionDetailRaw.Instructor
 		if instructors == nil {
-			instructors = []SectionInstructor{}
+			instructors = []Instructor{}
 		}
 
 		schedules := sectionDetailRaw.CourseSchedule
@@ -230,7 +225,6 @@ func toCourseWithSectionDetails(sectionDetailRawArr []SectionDetailRaw) mo.Optio
 		}
 		return SectionDetail{
 			Section:        sectionDetailRaw.Info.Section,
-			OutlinePath:    sectionDetailRaw.Info.OutlinePath,
 			DeliveryMethod: sectionDetailRaw.Info.DeliveryMethod,
 			ClassNumber:    sectionDetailRaw.Info.ClassNumber,
 			Instructors:    instructors,
@@ -239,4 +233,37 @@ func toCourseWithSectionDetails(sectionDetailRawArr []SectionDetailRaw) mo.Optio
 	})
 	courseWithSections.SectionDetails = sectionDetails
 	return mo.Some(courseWithSections)
+}
+
+// ProcessAndWriteOutlines takes a map of course outlines and a destination path,
+// processes the data (filters, sorts), and writes it to a JSON file
+func ProcessAndWriteOutlines(outlineMap map[string]model.CourseOutline, destPath string) error {
+	// Convert map to slice
+	outlines := slices.Collect(maps.Values(outlineMap))
+
+	// Remove entries with empty department or number
+	outlines = lo.Filter(outlines, func(course model.CourseOutline, _ int) bool {
+		return course.Dept != "" && course.Number != ""
+	})
+
+	// Sort by department and number
+	slices.SortFunc(outlines, func(a model.CourseOutline, b model.CourseOutline) int {
+		if a.Dept != b.Dept {
+			return strings.Compare(a.Dept, b.Dept)
+		}
+		return strings.Compare(a.Number, b.Number)
+	})
+
+	// Marshal to JSON
+	jsonData, err := json.Marshal(outlines)
+	if err != nil {
+		return fmt.Errorf("error marshaling to JSON: %w", err)
+	}
+
+	// Write to file
+	if err := os.WriteFile(destPath, jsonData, 0644); err != nil {
+		return fmt.Errorf("error writing to file: %w", err)
+	}
+
+	return nil
 }

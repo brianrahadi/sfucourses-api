@@ -2,32 +2,41 @@ package model
 
 // CourseOutline represents the general information about a course
 type CourseOutline struct {
-	Dept           string   `json:"dept"`
-	Number         string   `json:"number"`
-	Title          string   `json:"title"`
-	Units          string   `json:"units"`
-	Description    string   `json:"description"`
-	Notes          string   `json:"notes"`
-	Designation    string   `json:"designation"`
-	DeliveryMethod string   `json:"deliveryMethod"`
-	Prerequisites  string   `json:"prerequisites"`
-	Corequisites   string   `json:"corequisites"`
-	DegreeLevel    string   `json:"degreeLevel"`
-	Terms          []string `json:"terms"`
+	Dept           string           `json:"dept"`
+	Number         string           `json:"number"`
+	Title          string           `json:"title"`
+	Units          string           `json:"units"`
+	Description    string           `json:"description"`
+	Notes          string           `json:"notes"`
+	Designation    string           `json:"designation"`
+	DeliveryMethod string           `json:"deliveryMethod"`
+	Prerequisites  string           `json:"prerequisites"`
+	Corequisites   string           `json:"corequisites"`
+	DegreeLevel    string           `json:"degreeLevel"`
+	Offerings      []CourseOffering `json:"offerings"`
 }
 
-type SectionInfo struct {
-	Dept           string `json:"dept"`           // CMPT
-	Number         string `json:"number"`         // 225
-	Section        string `json:"section"`        // D100
-	Term           string `json:"term"`           // Fall 2024
-	OutlinePath    string `json:"outlinePath"`    // 2024/fall/cmpt/225/d100
-	DeliveryMethod string `json:"deliveryMethod"` // In Person
-	ClassNumber    string `json:"classNumber"`    // 6327
+type CourseWithSectionDetails struct {
+	Dept           string          `json:"dept"`   // CMPT
+	Number         string          `json:"number"` // 225
+	Term           string          `json:"term"`   // Fall 2024
+	SectionDetails []SectionDetail `json:"sections"`
 }
 
-type SectionInstructor struct {
-	Name  string `json:"name"` // John Doe
+type CourseOffering struct {
+	Instructors []string `json:"instructors"`
+	Term        string   `json:"term"`
+}
+
+type SectionDetail struct {
+	Section        string            `json:"section"`        // D100
+	DeliveryMethod string            `json:"deliveryMethod"` // In Person
+	ClassNumber    string            `json:"classNumber"`    // 6327
+	Instructors    []Instructor      `json:"instructors"`
+	Schedules      []SectionSchedule `json:"schedules"`
+}
+type Instructor struct {
+	Name  string `json:"name"`
 	Email string `json:"email"`
 }
 
@@ -43,26 +52,18 @@ type SectionSchedule struct {
 
 // for json read from sfu courses API
 type SectionDetailRaw struct {
-	Info           SectionInfo         `json:"info"`
-	Instructor     []SectionInstructor `json:"instructor"`     // singular for parsing
-	CourseSchedule []SectionSchedule   `json:"courseSchedule"` //
+	Info           SectionInfo       `json:"info"`
+	Instructor     []Instructor      `json:"instructor"`     // singular for parsing
+	CourseSchedule []SectionSchedule `json:"courseSchedule"` //
 }
 
-type SectionDetail struct {
-	Section        string              `json:"section"`        // D100
-	OutlinePath    string              `json:"outlinePath"`    // 2024/fall/cmpt/225/d100
-	DeliveryMethod string              `json:"deliveryMethod"` // In Person
-	ClassNumber    string              `json:"classNumber"`    // 6327
-	Instructors    []SectionInstructor `json:"instructors"`
-	Schedules      []SectionSchedule   `json:"schedules"`
-}
-
-// for json write
-type CourseWithSectionDetails struct {
-	Dept           string          `json:"dept"`   // CMPT
-	Number         string          `json:"number"` // 225
-	Term           string          `json:"term"`   // Fall 2024
-	SectionDetails []SectionDetail `json:"sections"`
+type SectionInfo struct {
+	Dept           string `json:"dept"`           // CMPT
+	Number         string `json:"number"`         // 225
+	Section        string `json:"section"`        // D100
+	Term           string `json:"term"`           // Fall 2024
+	DeliveryMethod string `json:"deliveryMethod"` // In Person
+	ClassNumber    string `json:"classNumber"`    // 6327
 }
 
 type CourseOutlinesResponse struct {
