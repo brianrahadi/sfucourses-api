@@ -3,7 +3,6 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/brianrahadi/sfucourses-api/internal/model"
@@ -44,7 +43,7 @@ func main() {
 		outlineMap[fmt.Sprintf("%s-%s", outline.Dept, outline.Number)] = outline
 	}
 
-	termCodes := []string{"2025-spring", "2024-fall", "2024-summer", "2024-spring"}
+	termCodes := []string{"2024-spring", "2024-summer", "2024-fall", "2025-spring"}
 	coursesMap := map[string][]model.CourseWithSectionDetails{}
 
 	for _, term := range termCodes {
@@ -73,17 +72,17 @@ func main() {
 		}
 	}
 
-	termIndices := make(map[string]int)
-	for i, termCode := range termCodes {
-		term := formatTermCode(termCode)
-		termIndices[term] = i
-	}
-	for outlineKey, outline := range outlineMap {
-		slices.SortFunc(outline.Offerings, func(offeringA model.CourseOffering, offeringB model.CourseOffering) int {
-			return termIndices[offeringA.Term] - termIndices[offeringB.Term]
-		})
-		outlineMap[outlineKey] = outline
-	}
+	// termIndices := make(map[string]int)
+	// for i, termCode := range termCodes {
+	// 	term := formatTermCode(termCode)
+	// 	termIndices[term] = i
+	// }
+	// for outlineKey, outline := range outlineMap {
+	// 	slices.SortFunc(outline.Offerings, func(offeringA model.CourseOffering, offeringB model.CourseOffering) int {
+	// 		return termIndices[offeringA.Term] - termIndices[offeringB.Term]
+	// 	})
+	// 	outlineMap[outlineKey] = outline
+	// }
 
 	utils.ProcessAndWriteOutlines(outlineMap, RESULT_PATH)
 }
