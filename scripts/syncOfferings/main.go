@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/brianrahadi/sfucourses-api/internal/model"
@@ -33,6 +34,9 @@ func main() {
 		fmt.Errorf("Error reading courses from JSON, %s", err.Error())
 		return
 	}
+	for i := range outlines {
+		outlines[i].Offerings = []model.CourseOffering{} // reset offerings
+	}
 
 	outlineMap := make(map[string]model.CourseOutline, len(outlines))
 
@@ -40,10 +44,10 @@ func main() {
 		outlineMap[fmt.Sprintf("%s-%s", outline.Dept, outline.Number)] = outline
 	}
 
-	terms := []string{"2025-spring", "2024-fall", "2024-summer", "2024-spring"}
+	termCodes := []string{"2025-spring", "2024-fall", "2024-summer", "2024-spring"}
 	coursesMap := map[string][]model.CourseWithSectionDetails{}
 
-	for _, term := range terms {
+	for _, term := range termCodes {
 		courses, err := internalUtils.ReadCoursesFromJSON[[]model.CourseWithSectionDetails](BASE_PATH + fmt.Sprintf("/courses/%s.json", term))
 		if err != nil {
 			fmt.Errorf("Error reading schedules from JSON %s", term)
@@ -62,12 +66,23 @@ func main() {
 			instructorNames = lo.Uniq(instructorNames)
 			instructorNames = lo.Filter(instructorNames, func(name string, _ int) bool { return name != "" })
 			newOffering.Instructors = instructorNames
-
 			outlineKey := fmt.Sprintf("%s-%s", course.Dept, course.Number)
 			outline := outlineMap[outlineKey]
 			outline.Offerings = append(outline.Offerings, newOffering)
 			outlineMap[outlineKey] = outline
 		}
+	}
+
+	termIndices := make(map[string]int)
+	for i, termCode := range termCodes {
+		term := formatTermCode(termCode)
+		termIndices[term] = i
+	}
+	for outlineKey, outline := range outlineMap {
+		slices.SortFunc(outline.Offerings, func(offeringA model.CourseOffering, offeringB model.CourseOffering) int {
+			return termIndices[offeringA.Term] - termIndices[offeringB.Term]
+		})
+		outlineMap[outlineKey] = outline
 	}
 
 	utils.ProcessAndWriteOutlines(outlineMap, RESULT_PATH)
