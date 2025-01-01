@@ -72,17 +72,5 @@ func main() {
 		}
 	}
 
-	// termIndices := make(map[string]int)
-	// for i, termCode := range termCodes {
-	// 	term := formatTermCode(termCode)
-	// 	termIndices[term] = i
-	// }
-	// for outlineKey, outline := range outlineMap {
-	// 	slices.SortFunc(outline.Offerings, func(offeringA model.CourseOffering, offeringB model.CourseOffering) int {
-	// 		return termIndices[offeringA.Term] - termIndices[offeringB.Term]
-	// 	})
-	// 	outlineMap[outlineKey] = outline
-	// }
-
 	utils.ProcessAndWriteOutlines(outlineMap, RESULT_PATH)
 }
