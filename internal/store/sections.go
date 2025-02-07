@@ -12,16 +12,16 @@ import (
 	"github.com/samber/lo"
 )
 
-//go:embed json/courses/2025-spring.json
+//go:embed json/sections/2025-spring.json
 var spring2025Courses []byte
 
-//go:embed json/courses/2024-fall.json
+//go:embed json/sections/2024-fall.json
 var fall2024Courses []byte
 
-//go:embed json/courses/2024-summer.json
+//go:embed json/sections/2024-summer.json
 var summer2024Courses []byte
 
-//go:embed json/courses/2024-spring.json
+//go:embed json/sections/2024-spring.json
 var spring2024Courses []byte
 
 type CoursesStore struct {
