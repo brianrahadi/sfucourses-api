@@ -26,7 +26,7 @@ func (app *application) getCoursesByTerm(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	courses, err := app.store.Courses.GetByTerm(ctx, year, term)
+	courses, err := app.store.Sections.GetByTerm(ctx, year, term)
 	if err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):
@@ -54,7 +54,7 @@ func (app *application) getCoursesByTermAndDept(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	courses, err := app.store.Courses.GetByTermAndDept(ctx, year, term, dept)
+	courses, err := app.store.Sections.GetByTermAndDept(ctx, year, term, dept)
 	if err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):
@@ -83,7 +83,7 @@ func (app *application) getCoursesByTermAndDeptAndNumber(w http.ResponseWriter, 
 		return
 	}
 
-	courses, err := app.store.Courses.GetByTermAndDeptAndNumber(ctx, year, term, dept, number)
+	courses, err := app.store.Sections.GetByTermAndDeptAndNumber(ctx, year, term, dept, number)
 	if err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):

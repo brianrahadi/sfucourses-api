@@ -24,11 +24,11 @@ var summer2024Courses []byte
 //go:embed json/sections/2024-spring.json
 var spring2024Courses []byte
 
-type CoursesStore struct {
+type SectionsStore struct {
 	cachedCourses map[string][]CourseWithSectionDetails
 }
 
-func NewCourseStore() (*CoursesStore, error) {
+func NewSectionStore() (*SectionsStore, error) {
 	// Initialize a map of raw JSON data for each schedule
 	scheduleMap := map[string][]byte{
 		"2025-spring": spring2025Courses,
@@ -38,7 +38,7 @@ func NewCourseStore() (*CoursesStore, error) {
 	}
 
 	// Initialize the CoursesStore
-	store := &CoursesStore{
+	store := &SectionsStore{
 		cachedCourses: make(map[string][]CourseWithSectionDetails),
 	}
 
@@ -54,7 +54,7 @@ func NewCourseStore() (*CoursesStore, error) {
 	return store, nil
 }
 
-func (s *CoursesStore) GetByTerm(ctx context.Context, year string, term string) ([]CourseWithSectionDetails, error) {
+func (s *SectionsStore) GetByTerm(ctx context.Context, year string, term string) ([]CourseWithSectionDetails, error) {
 	key := fmt.Sprintf("%s-%s", year, strings.ToLower(term))
 	courses, found := s.cachedCourses[key]
 	if !found {
@@ -63,7 +63,7 @@ func (s *CoursesStore) GetByTerm(ctx context.Context, year string, term string) 
 	return courses, nil
 }
 
-func (s *CoursesStore) GetByTermAndDept(ctx context.Context, year string, term string, dept string) ([]CourseWithSectionDetails, error) {
+func (s *SectionsStore) GetByTermAndDept(ctx context.Context, year string, term string, dept string) ([]CourseWithSectionDetails, error) {
 	courses, err := s.GetByTerm(ctx, year, term)
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (s *CoursesStore) GetByTermAndDept(ctx context.Context, year string, term s
 	return courses, nil
 }
 
-func (s *CoursesStore) GetByTermAndDeptAndNumber(ctx context.Context, year string, term string, dept string, number string) (CourseWithSectionDetails, error) {
+func (s *SectionsStore) GetByTermAndDeptAndNumber(ctx context.Context, year string, term string, dept string, number string) (CourseWithSectionDetails, error) {
 	courses, err := s.GetByTerm(ctx, year, term)
 	if err != nil {
 		return CourseWithSectionDetails{}, err

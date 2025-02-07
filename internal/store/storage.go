@@ -20,10 +20,16 @@ type Storage struct {
 		GetByDeptAndNumber(context.Context, string, string) (CourseOutline, error)
 	}
 
-	Courses interface {
+	Sections interface {
 		GetByTerm(context.Context, string, string) ([]CourseWithSectionDetails, error)
 		GetByTermAndDept(context.Context, string, string, string) ([]CourseWithSectionDetails, error)
 		GetByTermAndDeptAndNumber(context.Context, string, string, string, string) (CourseWithSectionDetails, error)
+	}
+
+	SectionsWithOutlines interface {
+		GetByTerm(context.Context, string, string) ([]CourseOutlineWithSectionDetails, error)
+		GetByTermAndDept(context.Context, string, string, string) ([]CourseOutlineWithSectionDetails, error)
+		GetByTermAndDeptAndNumber(context.Context, string, string, string, string) (CourseOutlineWithSectionDetails, error)
 	}
 }
 
@@ -33,13 +39,20 @@ func NewStorage() Storage {
 		log.Fatal("Error loading outlines store")
 		outlines = &OutlineStore{}
 	}
-	courses, err := NewCourseStore()
+	sections, err := NewSectionStore()
 	if err != nil {
-		log.Fatal("Error loading courses store")
-		courses = &CoursesStore{}
+		log.Fatal("Error loading sections store")
+		sections = &SectionsStore{}
+	}
+
+	sectionsWithOutline, err := NewSectionsWithOutlineStore()
+	if err != nil {
+		log.Fatal("Error loading sections store")
+		sectionsWithOutline = &SectionsWithOutlineStore{}
 	}
 	return Storage{
-		Outlines: outlines,
-		Courses:  courses,
+		Outlines:             outlines,
+		Sections:             sections,
+		SectionsWithOutlines: sectionsWithOutline,
 	}
 }

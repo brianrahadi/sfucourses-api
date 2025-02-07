@@ -23,6 +23,20 @@ type CourseWithSectionDetails struct {
 	SectionDetails []SectionDetail `json:"sections"`
 }
 
+type CourseOutlineWithSectionDetails struct {
+	Dept           string          `json:"dept"`
+	Number         string          `json:"number"`
+	Title          string          `json:"title"`
+	Units          string          `json:"units"`
+	Description    string          `json:"description"`
+	Designation    string          `json:"designation"`
+	DeliveryMethod string          `json:"deliveryMethod"`
+	Prerequisites  string          `json:"prerequisites"`
+	Corequisites   string          `json:"corequisites"`
+	Term           string          `json:"term"`
+	SectionDetails []SectionDetail `json:"sections"`
+}
+
 type CourseOffering struct {
 	Instructors []string `json:"instructors"`
 	Term        string   `json:"term"`
