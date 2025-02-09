@@ -14,7 +14,7 @@ import (
 )
 
 //go:embed json/outlines.json
-var data []byte
+var outlinesJSON []byte
 
 type OutlineStore struct {
 	cachedOutlines []CourseOutline
@@ -22,7 +22,7 @@ type OutlineStore struct {
 
 func NewOutlineStore() (*OutlineStore, error) {
 	var outlines []CourseOutline
-	if err := json.Unmarshal(data, &outlines); err != nil {
+	if err := json.Unmarshal(outlinesJSON, &outlines); err != nil {
 		return nil, fmt.Errorf("error parsing JSON: %v", err)
 	}
 

@@ -56,13 +56,10 @@ func (app *application) mount() http.Handler {
 	mux.HandleFunc("GET /v1/rest/outlines/{dept}", app.getCourseOutlinesByDept)
 	mux.HandleFunc("GET /v1/rest/outlines/{dept}/{number}", app.getCourseOutlinesByDeptAndNumber)
 
-	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}", app.getCoursesByTerm)
-	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}/{dept}", app.getCoursesByTermAndDept)
-	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}/{dept}/{number}", app.getCoursesByTermAndDeptAndNumber)
+	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}", app.getSectionsByTerm)
+	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}/{dept}", app.getSectionsByTermAndDept)
+	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}/{dept}/{number}", app.getSectionsByTermAndDeptAndNumber)
 
-	mux.HandleFunc("GET /v1/rest/sections-with-outlines/{yearTerm}", app.getSectionsWithOutlinesByTerm)
-	mux.HandleFunc("GET /v1/rest/sections-with-outlines/{yearTerm}/{dept}", app.getSectionsWithOutlinesByTermAndDept)
-	mux.HandleFunc("GET /v1/rest/sections-with-outlines/{yearTerm}/{dept}/{number}", app.getSectionsWithOutlinesByTermAndDeptAndNumber)
 	return mux
 }
 

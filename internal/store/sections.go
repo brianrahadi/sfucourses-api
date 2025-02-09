@@ -25,7 +25,7 @@ var summer2024Courses []byte
 var spring2024Courses []byte
 
 type SectionsStore struct {
-	cachedCourses map[string][]CourseWithSectionDetails
+	cachedSections map[string][]CourseWithSectionDetails
 }
 
 func NewSectionStore() (*SectionsStore, error) {
@@ -39,7 +39,7 @@ func NewSectionStore() (*SectionsStore, error) {
 
 	// Initialize the CoursesStore
 	store := &SectionsStore{
-		cachedCourses: make(map[string][]CourseWithSectionDetails),
+		cachedSections: make(map[string][]CourseWithSectionDetails),
 	}
 
 	// Unmarshal each schedule and cache it in memory
@@ -48,7 +48,7 @@ func NewSectionStore() (*SectionsStore, error) {
 		if err := json.Unmarshal(data, &courses); err != nil {
 			return nil, fmt.Errorf("error parsing JSON for term %s: %v", term, err)
 		}
-		store.cachedCourses[term] = courses
+		store.cachedSections[term] = courses
 	}
 
 	return store, nil
@@ -56,7 +56,7 @@ func NewSectionStore() (*SectionsStore, error) {
 
 func (s *SectionsStore) GetByTerm(ctx context.Context, year string, term string) ([]CourseWithSectionDetails, error) {
 	key := fmt.Sprintf("%s-%s", year, strings.ToLower(term))
-	courses, found := s.cachedCourses[key]
+	courses, found := s.cachedSections[key]
 	if !found {
 		return nil, ErrNotFound
 	}

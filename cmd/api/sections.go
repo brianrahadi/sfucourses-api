@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/brianrahadi/sfucourses-api/internal/store"
@@ -16,7 +17,21 @@ func splitYearTerm(yearTerm string) (year, term string, err error) {
 	return parts[0], parts[1], nil
 }
 
-func (app *application) getCoursesByTerm(w http.ResponseWriter, r *http.Request) {
+func getWithOutlines(app *application, w http.ResponseWriter, r *http.Request) bool {
+	withOutlines := false
+	withOutlinesStr := r.URL.Query().Get("withOutlines")
+	if withOutlinesStr != "" {
+		var err error
+		withOutlines, err = strconv.ParseBool(withOutlinesStr)
+		if err != nil {
+			app.badRequestResponse(w, r, err)
+			return false
+		}
+	}
+	return withOutlines
+}
+
+func (app *application) getSectionsByTerm(w http.ResponseWriter, r *http.Request) {
 	yearTerm := r.PathValue("yearTerm")
 	ctx := r.Context()
 
@@ -26,7 +41,27 @@ func (app *application) getCoursesByTerm(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	courses, err := app.store.Sections.GetByTerm(ctx, year, term)
+	withOutlines := getWithOutlines(app, w, r)
+
+	if withOutlines {
+		sectionsWithOutlines, err := app.store.SectionsWithOutlines.GetByTerm(ctx, year, term)
+		if err != nil {
+			switch {
+			case errors.Is(err, store.ErrNotFound):
+				app.notFoundResponse(w, r, err)
+			default:
+				app.internalServerError(w, r, err)
+			}
+			return
+		}
+
+		if err := writeJSON(w, http.StatusOK, sectionsWithOutlines); err != nil {
+			app.internalServerError(w, r, err)
+			return
+		}
+	}
+
+	sections, err := app.store.Sections.GetByTerm(ctx, year, term)
 	if err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):
@@ -37,13 +72,13 @@ func (app *application) getCoursesByTerm(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := writeJSON(w, http.StatusOK, courses); err != nil {
+	if err := writeJSON(w, http.StatusOK, sections); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
 }
 
-func (app *application) getCoursesByTermAndDept(w http.ResponseWriter, r *http.Request) {
+func (app *application) getSectionsByTermAndDept(w http.ResponseWriter, r *http.Request) {
 	yearTerm := r.PathValue("yearTerm")
 	dept := r.PathValue("dept")
 	ctx := r.Context()
@@ -54,7 +89,26 @@ func (app *application) getCoursesByTermAndDept(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	courses, err := app.store.Sections.GetByTermAndDept(ctx, year, term, dept)
+	withOutlines := getWithOutlines(app, w, r)
+
+	if withOutlines {
+		sectionsWithOutlines, err := app.store.SectionsWithOutlines.GetByTermAndDept(ctx, year, term, dept)
+		if err != nil {
+			switch {
+			case errors.Is(err, store.ErrNotFound):
+				app.notFoundResponse(w, r, err)
+			default:
+				app.internalServerError(w, r, err)
+			}
+			return
+		}
+
+		if err := writeJSON(w, http.StatusOK, sectionsWithOutlines); err != nil {
+			app.internalServerError(w, r, err)
+			return
+		}
+	}
+	sections, err := app.store.Sections.GetByTermAndDept(ctx, year, term, dept)
 	if err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):
@@ -65,13 +119,13 @@ func (app *application) getCoursesByTermAndDept(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	if err := writeJSON(w, http.StatusOK, courses); err != nil {
+	if err := writeJSON(w, http.StatusOK, sections); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
 }
 
-func (app *application) getCoursesByTermAndDeptAndNumber(w http.ResponseWriter, r *http.Request) {
+func (app *application) getSectionsByTermAndDeptAndNumber(w http.ResponseWriter, r *http.Request) {
 	yearTerm := r.PathValue("yearTerm")
 	dept := r.PathValue("dept")
 	number := r.PathValue("number")
@@ -83,7 +137,26 @@ func (app *application) getCoursesByTermAndDeptAndNumber(w http.ResponseWriter, 
 		return
 	}
 
-	courses, err := app.store.Sections.GetByTermAndDeptAndNumber(ctx, year, term, dept, number)
+	withOutlines := getWithOutlines(app, w, r)
+
+	if withOutlines {
+		sectionsWithOutlines, err := app.store.SectionsWithOutlines.GetByTermAndDeptAndNumber(ctx, year, term, dept, number)
+		if err != nil {
+			switch {
+			case errors.Is(err, store.ErrNotFound):
+				app.notFoundResponse(w, r, err)
+			default:
+				app.internalServerError(w, r, err)
+			}
+			return
+		}
+
+		if err := writeJSON(w, http.StatusOK, sectionsWithOutlines); err != nil {
+			app.internalServerError(w, r, err)
+			return
+		}
+	}
+	sections, err := app.store.Sections.GetByTermAndDeptAndNumber(ctx, year, term, dept, number)
 	if err != nil {
 		switch {
 		case errors.Is(err, store.ErrNotFound):
@@ -94,7 +167,7 @@ func (app *application) getCoursesByTermAndDeptAndNumber(w http.ResponseWriter, 
 		return
 	}
 
-	if err := writeJSON(w, http.StatusOK, courses); err != nil {
+	if err := writeJSON(w, http.StatusOK, sections); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
