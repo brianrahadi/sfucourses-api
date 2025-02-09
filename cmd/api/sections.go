@@ -59,6 +59,7 @@ func (app *application) getSectionsByTerm(w http.ResponseWriter, r *http.Request
 			app.internalServerError(w, r, err)
 			return
 		}
+		return
 	}
 
 	sections, err := app.store.Sections.GetByTerm(ctx, year, term)
@@ -107,6 +108,7 @@ func (app *application) getSectionsByTermAndDept(w http.ResponseWriter, r *http.
 			app.internalServerError(w, r, err)
 			return
 		}
+		return
 	}
 	sections, err := app.store.Sections.GetByTermAndDept(ctx, year, term, dept)
 	if err != nil {
@@ -155,6 +157,7 @@ func (app *application) getSectionsByTermAndDeptAndNumber(w http.ResponseWriter,
 			app.internalServerError(w, r, err)
 			return
 		}
+		return
 	}
 	sections, err := app.store.Sections.GetByTermAndDeptAndNumber(ctx, year, term, dept, number)
 	if err != nil {
