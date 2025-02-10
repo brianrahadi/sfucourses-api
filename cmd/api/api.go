@@ -1,8 +1,11 @@
 package main
 
 import (
+	"compress/gzip"
+	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/brianrahadi/sfucourses-api/internal/store"
@@ -23,6 +26,11 @@ type dbConfig struct {
 	maxOpenConns int
 	maxIdleConns int
 	maxIdleTime  string
+}
+
+type gzipResponseWriter struct {
+	http.ResponseWriter
+	Writer io.Writer
 }
 
 func (app *application) mount() http.Handler {
@@ -63,6 +71,10 @@ func (app *application) mount() http.Handler {
 	return mux
 }
 
+func (g *gzipResponseWriter) Write(b []byte) (int, error) {
+	return g.Writer.Write(b)
+}
+
 func (app *application) middleware(next http.Handler) http.Handler {
 	return http.TimeoutHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -71,16 +83,34 @@ func (app *application) middleware(next http.Handler) http.Handler {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			}
 		}()
-		w.Header().Add("Access-Control-Allow-Origin", "*")
-		w.Header().Add("Access-Control-Allow-Credentials", "true")
-		w.Header().Add("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		w.Header().Add("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+
+		// CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 
 		log.Printf("%s %s %s", r.Method, r.URL.Path, r.RemoteAddr)
+
+		// Handle CORS preflight requests
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			w.Header().Set("Content-Encoding", "gzip")
+			gz := gzip.NewWriter(w)
+			defer gz.Close()
+
+			gzipWriter := &gzipResponseWriter{ResponseWriter: w, Writer: gz}
+			next.ServeHTTP(gzipWriter, r)
+			return
+		}
+
 		next.ServeHTTP(w, r)
 	}), 60*time.Second, "Request timed out")
 }
-
 func (app *application) run(mux http.Handler) error {
 	srv := &http.Server{
 		Addr:         app.config.addr,

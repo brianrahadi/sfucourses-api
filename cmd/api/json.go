@@ -1,13 +1,22 @@
 package main
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"net/http"
 )
 
 func writeJSON(w http.ResponseWriter, status int, data any) error {
+	// Set JSON response headers
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
+
+	if w.Header().Get("Content-Encoding") == "gzip" {
+		gz := gzip.NewWriter(w)
+		defer gz.Close()
+		return json.NewEncoder(gz).Encode(data)
+	}
+
 	return json.NewEncoder(w).Encode(data)
 }
 
