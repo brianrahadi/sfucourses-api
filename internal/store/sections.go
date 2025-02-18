@@ -12,6 +12,9 @@ import (
 	"github.com/samber/lo"
 )
 
+//go:embed json/sections/2025-summer.json
+var summer2025Courses []byte
+
 //go:embed json/sections/2025-spring.json
 var spring2025Courses []byte
 
@@ -31,6 +34,7 @@ type SectionsStore struct {
 func NewSectionStore() (*SectionsStore, error) {
 	// Initialize a map of raw JSON data for each schedule
 	scheduleMap := map[string][]byte{
+		"2025-summer": summer2025Courses,
 		"2025-spring": spring2025Courses,
 		"2024-fall":   fall2024Courses,
 		"2024-summer": summer2024Courses,

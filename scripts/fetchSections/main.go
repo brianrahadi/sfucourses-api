@@ -24,7 +24,7 @@ func main() {
 	year := os.Args[1]
 	term := os.Args[2]
 
-	resultFilePath := fmt.Sprintf("./internal/store/json/schedules/%s-%s.json", year, term)
+	resultFilePath := fmt.Sprintf("./internal/store/json/sections/%s-%s.json", year, term)
 
 	var courseWithSectionDetailsMapContainer = mo.Right[map[string]model.CourseOutline](make(map[string]model.CourseWithSectionDetails))
 

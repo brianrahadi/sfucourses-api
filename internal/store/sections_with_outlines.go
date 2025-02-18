@@ -26,6 +26,7 @@ func NewSectionsWithOutlineStore() (*SectionsWithOutlineStore, error) {
 		"2024-fall":   fall2024Courses,
 		"2024-summer": summer2024Courses,
 		"2024-spring": spring2024Courses,
+		"2025-summer": summer2025Courses,
 	}
 
 	var outlines []CourseOutline
