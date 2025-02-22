@@ -47,7 +47,7 @@ func main() {
 	coursesMap := map[string][]model.CourseWithSectionDetails{}
 
 	for _, term := range termCodes {
-		courses, err := internalUtils.ReadCoursesFromJSON[[]model.CourseWithSectionDetails](BASE_PATH + fmt.Sprintf("/courses/%s.json", term))
+		courses, err := internalUtils.ReadCoursesFromJSON[[]model.CourseWithSectionDetails](BASE_PATH + fmt.Sprintf("/sections/%s.json", term))
 		if err != nil {
 			fmt.Errorf("Error reading schedules from JSON %s", term)
 		}
