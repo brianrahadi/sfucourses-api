@@ -43,7 +43,7 @@ func main() {
 		outlineMap[fmt.Sprintf("%s-%s", outline.Dept, outline.Number)] = outline
 	}
 
-	termCodes := []string{"2024-spring", "2024-summer", "2024-fall", "2025-spring"}
+	termCodes := []string{"2024-spring", "2024-summer", "2024-fall", "2025-spring", "2025-summer"}
 	coursesMap := map[string][]model.CourseWithSectionDetails{}
 
 	for _, term := range termCodes {
