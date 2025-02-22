@@ -98,7 +98,7 @@ func (app *application) middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") && r.URL.Query().Get("zip") == "true" {
+		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") && r.URL.Query().Get("gzip") == "true" {
 			w.Header().Set("Content-Encoding", "gzip")
 			gz := gzip.NewWriter(w)
 			defer gz.Close()
