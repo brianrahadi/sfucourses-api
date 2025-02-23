@@ -3,6 +3,8 @@ package main
 import (
 	_ "embed"
 	"fmt"
+	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/brianrahadi/sfucourses-api/internal/model"
@@ -10,6 +12,36 @@ import (
 	utils "github.com/brianrahadi/sfucourses-api/scripts"
 	"github.com/samber/lo"
 )
+
+func termToSortableValue(term string) int {
+	// Split the term into season and year
+	parts := strings.Split(term, " ")
+	if len(parts) != 2 {
+		return 0 // Handle invalid format
+	}
+
+	season, yearStr := parts[0], parts[1]
+	year, err := strconv.Atoi(yearStr)
+	if err != nil {
+		return 0 // Handle invalid year
+	}
+
+	// Assign a month value based on the season
+	var month int
+	switch season {
+	case "Spring":
+		month = 1
+	case "Summer":
+		month = 5
+	case "Fall":
+		month = 9
+	default:
+		month = 0 // Handle unknown season
+	}
+
+	// Combine year and month into a sortable value
+	return year*100 + month
+}
 
 // 2025-spring to Spring 2025
 func formatTermCode(termCode string) string {
@@ -68,6 +100,11 @@ func main() {
 			outlineKey := fmt.Sprintf("%s-%s", course.Dept, course.Number)
 			outline := outlineMap[outlineKey]
 			outline.Offerings = append(outline.Offerings, newOffering)
+			sort.Slice(outline.Offerings, func(i, j int) bool {
+				termI := termToSortableValue(outline.Offerings[i].Term)
+				termJ := termToSortableValue(outline.Offerings[j].Term)
+				return termI > termJ // Sort in descending order (most recent first)
+			})
 			outlineMap[outlineKey] = outline
 		}
 	}
