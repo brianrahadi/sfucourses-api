@@ -19,6 +19,8 @@ type CourseOutline struct {
 type CourseWithSectionDetails struct {
 	Dept           string          `json:"dept"`   // CMPT
 	Number         string          `json:"number"` // 225
+	Title          string          `json:"title"`  // Data Structure and Algorithms
+	Units          string          `json:"units"`  // 3
 	Term           string          `json:"term"`   // Fall 2024
 	SectionDetails []SectionDetail `json:"sections"`
 }
@@ -75,6 +77,8 @@ type SectionInfo struct {
 	Dept           string `json:"dept"`           // CMPT
 	Number         string `json:"number"`         // 225
 	Section        string `json:"section"`        // D100
+	Title          string `json:"title"`          // Data Structures and Algorithms
+	Units          string `json:"units"`          // 3
 	Term           string `json:"term"`           // Fall 2024
 	DeliveryMethod string `json:"deliveryMethod"` // In Person
 	ClassNumber    string `json:"classNumber"`    // 6327

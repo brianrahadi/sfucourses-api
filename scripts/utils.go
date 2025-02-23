@@ -211,6 +211,8 @@ func toCourseWithSectionDetails(sectionDetailRawArr []SectionDetailRaw) mo.Optio
 	var courseWithSections CourseWithSectionDetails
 	courseWithSections.Dept = sectionDetailRawArr[0].Info.Dept
 	courseWithSections.Number = sectionDetailRawArr[0].Info.Number
+	courseWithSections.Title = sectionDetailRawArr[0].Info.Title
+	courseWithSections.Units = sectionDetailRawArr[0].Info.Units
 	courseWithSections.Term = sectionDetailRawArr[0].Info.Term
 
 	sectionDetails := lo.Map(sectionDetailRawArr, func(sectionDetailRaw SectionDetailRaw, _ int) SectionDetail {

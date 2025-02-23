@@ -3,7 +3,7 @@ fetch-outlines:
 	go run scripts/fetchOutlines/main.go
 
 .PHONY: fetch-sections
-fetch-courses:
+fetch-sections:
 	go run scripts/fetchSections/main.go
 
 .PHONY: sync-offerings
