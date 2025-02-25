@@ -1,3 +1,13 @@
+// Package main provides the entry point for the SFU Courses API.
+//
+// @title SFU Courses API
+// @version 1.0
+// @description API for accessing SFU course schedules and outlines
+// @termsOfService http://example.com/terms/
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host api.sfucourses.com
+// @BasePath /v1/rest
 package main
 
 import (
@@ -11,16 +21,19 @@ import (
 	"github.com/brianrahadi/sfucourses-api/internal/store"
 )
 
+// application represents the application structure with configuration and data store
 type application struct {
 	config config
 	store  store.Storage
 }
 
+// config holds the application configuration
 type config struct {
 	addr string
 	env  string
 }
 
+// dbConfig holds the database configuration
 type dbConfig struct {
 	addr         string
 	maxOpenConns int
@@ -28,11 +41,16 @@ type dbConfig struct {
 	maxIdleTime  string
 }
 
+// gzipResponseWriter wraps http.ResponseWriter to support gzip compression
 type gzipResponseWriter struct {
 	http.ResponseWriter
 	Writer io.Writer
 }
 
+// mount sets up all the API routes
+// @Summary Mount all API routes
+// @Description Sets up all the routes for the API
+// @Return http.Handler
 func (app *application) mount() http.Handler {
 	mux := http.NewServeMux()
 
@@ -58,23 +76,91 @@ func (app *application) mount() http.Handler {
 		w.Write([]byte(html))
 	}))
 
+	// @Summary Health check endpoint
+	// @Description Check the health status of the API
+	// @Tags health
+	// @Produce json
+	// @Success 200 {object} HealthResponse
+	// @Router /health [get]
 	mux.HandleFunc("GET /v1/rest/health", app.healthCheckHandler)
 
+	// @Summary Get all course outlines
+	// @Description Retrieve all available course outlines
+	// @Tags outlines
+	// @Produce json
+	// @Success 200 {array} OutlineResponse
+	// @Failure 500 {object} ErrorResponse
+	// @Router /outlines/all [get]
 	mux.HandleFunc("GET /v1/rest/outlines/all", app.getAllCourseOutlines)
+
+	// @Summary Get course outlines by department
+	// @Description Retrieve course outlines for a specific department
+	// @Tags outlines
+	// @Produce json
+	// @Param dept path string true "Department code (e.g., CMPT)"
+	// @Success 200 {array} OutlineResponse
+	// @Failure 400 {object} ErrorResponse
+	// @Failure 404 {object} ErrorResponse
+	// @Router /outlines/{dept} [get]
 	mux.HandleFunc("GET /v1/rest/outlines/{dept}", app.getCourseOutlinesByDept)
+
+	// @Summary Get course outlines by department and number
+	// @Description Retrieve course outlines for a specific department and course number
+	// @Tags outlines
+	// @Produce json
+	// @Param dept path string true "Department code (e.g., CMPT)"
+	// @Param number path string true "Course number (e.g., 120)"
+	// @Success 200 {array} OutlineResponse
+	// @Failure 400 {object} ErrorResponse
+	// @Failure 404 {object} ErrorResponse
+	// @Router /outlines/{dept}/{number} [get]
 	mux.HandleFunc("GET /v1/rest/outlines/{dept}/{number}", app.getCourseOutlinesByDeptAndNumber)
 
+	// @Summary Get sections by term
+	// @Description Retrieve course sections for a specific term
+	// @Tags sections
+	// @Produce json
+	// @Param yearTerm path string true "Year and term (e.g., 2023-3)"
+	// @Success 200 {array} SectionResponse
+	// @Failure 400 {object} ErrorResponse
+	// @Router /sections/{yearTerm} [get]
 	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}", app.getSectionsByTerm)
+
+	// @Summary Get sections by term and department
+	// @Description Retrieve course sections for a specific term and department
+	// @Tags sections
+	// @Produce json
+	// @Param yearTerm path string true "Year and term (e.g., 2023-3)"
+	// @Param dept path string true "Department code (e.g., CMPT)"
+	// @Success 200 {array} SectionResponse
+	// @Failure 400 {object} ErrorResponse
+	// @Failure 404 {object} ErrorResponse
+	// @Router /sections/{yearTerm}/{dept} [get]
 	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}/{dept}", app.getSectionsByTermAndDept)
+
+	// @Summary Get sections by term, department, and course number
+	// @Description Retrieve course sections for a specific term, department, and course number
+	// @Tags sections
+	// @Produce json
+	// @Param yearTerm path string true "Year and term (e.g., 2023-3)"
+	// @Param dept path string true "Department code (e.g., CMPT)"
+	// @Param number path string true "Course number (e.g., 120)"
+	// @Success 200 {array} SectionResponse
+	// @Failure 400 {object} ErrorResponse
+	// @Failure 404 {object} ErrorResponse
+	// @Router /sections/{yearTerm}/{dept}/{number} [get]
 	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}/{dept}/{number}", app.getSectionsByTermAndDeptAndNumber)
 
 	return mux
 }
 
+// Write implements the io.Writer interface for gzipResponseWriter
 func (g *gzipResponseWriter) Write(b []byte) (int, error) {
 	return g.Writer.Write(b)
 }
 
+// middleware applies common middleware to all requests
+// @Description Apply common middleware including CORS, logging, timeout, and gzip compression
 func (app *application) middleware(next http.Handler) http.Handler {
 	return http.TimeoutHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -111,6 +197,9 @@ func (app *application) middleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}), 60*time.Second, "Request timed out")
 }
+
+// run starts the HTTP server
+// @Description Start the HTTP server with the provided handler and configuration
 func (app *application) run(mux http.Handler) error {
 	srv := &http.Server{
 		Addr:         app.config.addr,
@@ -123,4 +212,51 @@ func (app *application) run(mux http.Handler) error {
 	log.Printf("Server has started at %s", srv.Addr)
 
 	return srv.ListenAndServe()
+}
+
+// Models for Swagger documentation
+// Don't need to be implemented, just for documentation purposes
+
+// HealthResponse represents the health check response
+// @Description Health check status information
+type HealthResponse struct {
+	Status  string `json:"status"`
+	Version string `json:"version,omitempty"`
+}
+
+// OutlineResponse represents a course outline response
+// @Description Course outline information
+type OutlineResponse struct {
+	Department    string `json:"department"`
+	CourseNumber  string `json:"courseNumber"`
+	Title         string `json:"title"`
+	Description   string `json:"description"`
+	Prerequisites string `json:"prerequisites,omitempty"`
+	Corequisites  string `json:"corequisites,omitempty"`
+	Credits       int    `json:"credits"`
+	OutlineURL    string `json:"outlineUrl"`
+	LastUpdated   string `json:"lastUpdated"`
+}
+
+// SectionResponse represents a course section response
+// @Description Course section information
+type SectionResponse struct {
+	YearTerm       string `json:"yearTerm"`
+	Department     string `json:"department"`
+	CourseNumber   string `json:"courseNumber"`
+	Section        string `json:"section"`
+	Title          string `json:"title"`
+	InstructorName string `json:"instructorName,omitempty"`
+	Days           string `json:"days,omitempty"`
+	Time           string `json:"time,omitempty"`
+	Location       string `json:"location,omitempty"`
+	Capacity       int    `json:"capacity"`
+	Enrolled       int    `json:"enrolled"`
+}
+
+// ErrorResponse represents an error response
+// @Description Error information
+type ErrorResponse struct {
+	Error   string `json:"error"`
+	Message string `json:"message,omitempty"`
 }
