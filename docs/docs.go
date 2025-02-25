@@ -625,7 +625,7 @@ var SwaggerInfo = &swag.Spec{
 	Version:          "",
 	Host:             "api.sfucourses.com",
 	BasePath:         "",
-	Schemes:          []string{},
+	Schemes:          []string{"https"},
 	Title:            "SFU Courses API",
 	Description:      "",
 	InfoInstanceName: "swagger",

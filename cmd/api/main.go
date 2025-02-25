@@ -13,9 +13,10 @@ const version = "0.0.1"
 //
 //	@title			SFU Courses API
 //	@description	API for accessing SFU course outlines, sections, and instructors
+//	@schemes		https
 //	@host			api.sfucourses.com
 
-// @description
+//	@description
 func main() {
 	cfg := config{
 		addr:   ":8080",

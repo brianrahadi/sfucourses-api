@@ -404,4 +404,6 @@ paths:
       summary: Get sections by term, department, and course number
       tags:
       - Sections
+schemes:
+- https
 swagger: "2.0"
