@@ -49,29 +49,33 @@ type gzipResponseWriter struct {
 func (app *application) mount() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	// mux.HandleFunc("GET /", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	// 	if r.URL.Path != "/" {
+	// 		http.NotFound(w, r)
+	// 		return
+	// 	}
+	// 	w.Header().Set("Content-Type", "text/html")
+	// 	html := `
+	// 	<!DOCTYPE html>
+	// 	<html>
+	// 	<head>
+	// 		<title>Welcome</title>
+	// 	</head>
+	// 	<body>
+	// 		<h1>Welcome to SFU Courses API</h1>
+	// 		<a href="./docs">Go to docs</a>
+	// 	</body>
+	// 	</html>
+	// 	`
+	// 	w.Write([]byte(html))
+	// }))
+
+	// docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
+	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
 			return
 		}
-		w.Header().Set("Content-Type", "text/html")
-		html := `
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<title>Welcome</title>
-		</head>
-		<body>
-			<h1>Welcome to SFU Courses API</h1>
-			<a href="./docs">Go to docs</a>
-		</body>
-		</html>
-		`
-		w.Write([]byte(html))
-	}))
-
-	// docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
-	mux.HandleFunc("GET /docs", func(w http.ResponseWriter, r *http.Request) {
 		htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
 			SpecURL: "./docs/swagger.json",
 			CustomOptions: scalar.CustomOptions{
