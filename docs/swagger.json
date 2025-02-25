@@ -4,9 +4,10 @@
         "title": "SFU Courses API",
         "contact": {}
     },
+    "host": "api.sfucourses.com",
     "basePath": "/v1/rest",
     "paths": {
-        "/v1/rest/outlines/all": {
+        "/outlines/all": {
             "get": {
                 "description": "Retrieves a paginated list of all course outlines",
                 "consumes": [
@@ -52,7 +53,7 @@
                 }
             }
         },
-        "/v1/rest/outlines/{dept}": {
+        "/outlines/{dept}": {
             "get": {
                 "description": "Retrieves all course outlines for a specific department",
                 "consumes": [
@@ -102,7 +103,7 @@
                 }
             }
         },
-        "/v1/rest/outlines/{dept}/{number}": {
+        "/outlines/{dept}/{number}": {
             "get": {
                 "description": "Retrieves course outline for a specific department and course number",
                 "consumes": [
@@ -153,7 +154,7 @@
                 }
             }
         },
-        "/v1/rest/sections/{yearTerm}": {
+        "/sections/{yearTerm}": {
             "get": {
                 "description": "Retrieves all course sections for a specific year and term",
                 "consumes": [
@@ -215,7 +216,7 @@
                 }
             }
         },
-        "/v1/rest/sections/{yearTerm}/{dept}": {
+        "/sections/{yearTerm}/{dept}": {
             "get": {
                 "description": "Retrieves all course sections for a specific year, term, and department",
                 "consumes": [
@@ -284,7 +285,7 @@
                 }
             }
         },
-        "/v1/rest/sections/{yearTerm}/{dept}/{number}": {
+        "/sections/{yearTerm}/{dept}/{number}": {
             "get": {
                 "description": "Retrieves all course sections for a specific year, term, department, and course number",
                 "consumes": [

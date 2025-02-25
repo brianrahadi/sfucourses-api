@@ -45,7 +45,7 @@ func getWithOutlines(app *application, w http.ResponseWriter, r *http.Request) b
 // @Failure		400				{object}	ErrorResponse							"Invalid yearTerm format or query parameters"
 // @Failure		404				{object}	ErrorResponse							"No sections found for the specified term"
 // @Failure		500				{object}	ErrorResponse							"Internal server error"
-// @Router			/v1/rest/sections/{yearTerm} [get]
+// @Router			/sections/{yearTerm} [get]
 func (app *application) getSectionsByTerm(w http.ResponseWriter, r *http.Request) {
 	yearTerm := r.PathValue("yearTerm")
 	ctx := r.Context()
@@ -107,7 +107,7 @@ func (app *application) getSectionsByTerm(w http.ResponseWriter, r *http.Request
 // @Failure		400				{object}	ErrorResponse							"Invalid yearTerm format or query parameters"
 // @Failure		404				{object}	ErrorResponse							"No sections found for the specified term and department"
 // @Failure		500				{object}	ErrorResponse							"Internal server error"
-// @Router			/v1/rest/sections/{yearTerm}/{dept} [get]
+// @Router			/sections/{yearTerm}/{dept} [get]
 func (app *application) getSectionsByTermAndDept(w http.ResponseWriter, r *http.Request) {
 	yearTerm := r.PathValue("yearTerm")
 	dept := r.PathValue("dept")
@@ -170,7 +170,7 @@ func (app *application) getSectionsByTermAndDept(w http.ResponseWriter, r *http.
 // @Failure		400				{object}	ErrorResponse							"Invalid yearTerm format or query parameters"
 // @Failure		404				{object}	ErrorResponse							"No sections found for the specified criteria"
 // @Failure		500				{object}	ErrorResponse							"Internal server error"
-// @Router			/v1/rest/sections/{yearTerm}/{dept}/{number} [get]
+// @Router			/sections/{yearTerm}/{dept}/{number} [get]
 func (app *application) getSectionsByTermAndDeptAndNumber(w http.ResponseWriter, r *http.Request) {
 	yearTerm := r.PathValue("yearTerm")
 	dept := r.PathValue("dept")

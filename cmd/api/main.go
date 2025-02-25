@@ -14,13 +14,14 @@ const version = "0.0.1"
 //	@title			SFU Courses API
 //	@description	API for accessing SFU course outlines, sections, and instructors
 //	@BasePath		/v1/rest
-//
-//	@description
+//	@host			api.sfucourses.com
+
+// @description
 func main() {
 	cfg := config{
 		addr:   ":8080",
 		env:    "dev",
-		apiURL: "localhost:8080",
+		apiURL: "api.sfucourses.com",
 	}
 
 	store := store.NewStorage()

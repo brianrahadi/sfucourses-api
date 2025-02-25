@@ -49,8 +49,29 @@ type gzipResponseWriter struct {
 func (app *application) mount() http.Handler {
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("GET /", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html")
+		html := `
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<title>Welcome</title>
+		</head>
+		<body>
+			<h1>Welcome to SFU Courses API</h1>
+			<a href="./docs">Go to docs</a>
+		</body>
+		</html>
+		`
+		w.Write([]byte(html))
+	}))
+
 	// docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
-	mux.HandleFunc("GET /reference", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /docs", func(w http.ResponseWriter, r *http.Request) {
 		htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
 			SpecURL: "./docs/swagger.json",
 			CustomOptions: scalar.CustomOptions{
@@ -198,7 +219,7 @@ func (app *application) run(mux http.Handler) error {
 
 	// Docs
 	docs.SwaggerInfo.Version = version
-	docs.SwaggerInfo.Host = app.config.apiURL
+	docs.SwaggerInfo.Host = "api.sfucourses.com"
 	// docs.SwaggerInfo.BasePath = "/v1/rest"
 	srv := &http.Server{
 		Addr:         app.config.addr,

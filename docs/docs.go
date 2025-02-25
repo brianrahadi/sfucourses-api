@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/rest/outlines/all": {
+        "/outlines/all": {
             "get": {
                 "description": "Retrieves a paginated list of all course outlines",
                 "consumes": [
@@ -61,7 +61,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/rest/outlines/{dept}": {
+        "/outlines/{dept}": {
             "get": {
                 "description": "Retrieves all course outlines for a specific department",
                 "consumes": [
@@ -111,7 +111,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/rest/outlines/{dept}/{number}": {
+        "/outlines/{dept}/{number}": {
             "get": {
                 "description": "Retrieves course outline for a specific department and course number",
                 "consumes": [
@@ -162,7 +162,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/rest/sections/{yearTerm}": {
+        "/sections/{yearTerm}": {
             "get": {
                 "description": "Retrieves all course sections for a specific year and term",
                 "consumes": [
@@ -224,7 +224,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/rest/sections/{yearTerm}/{dept}": {
+        "/sections/{yearTerm}/{dept}": {
             "get": {
                 "description": "Retrieves all course sections for a specific year, term, and department",
                 "consumes": [
@@ -293,7 +293,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/rest/sections/{yearTerm}/{dept}/{number}": {
+        "/sections/{yearTerm}/{dept}/{number}": {
             "get": {
                 "description": "Retrieves all course sections for a specific year, term, department, and course number",
                 "consumes": [
@@ -585,7 +585,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "",
-	Host:             "",
+	Host:             "api.sfucourses.com",
 	BasePath:         "/v1/rest",
 	Schemes:          []string{},
 	Title:            "SFU Courses API",
