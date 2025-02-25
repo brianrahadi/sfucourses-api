@@ -14,8 +14,6 @@ const version = "0.0.1"
 //	@title			SFU Courses API
 //	@description	API for accessing SFU course outlines, sections, and instructors
 //	@BasePath		/v1/rest
-
-//	@BasePath	/v1
 //
 //	@description
 func main() {

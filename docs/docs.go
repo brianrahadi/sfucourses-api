@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/outlines": {
+        "/v1/rest/outlines/all": {
             "get": {
                 "description": "Retrieves a paginated list of all course outlines",
                 "consumes": [
@@ -61,7 +61,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/outlines/dept/{dept}": {
+        "/v1/rest/outlines/{dept}": {
             "get": {
                 "description": "Retrieves all course outlines for a specific department",
                 "consumes": [
@@ -111,7 +111,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/outlines/dept/{dept}/number/{number}": {
+        "/v1/rest/outlines/{dept}/{number}": {
             "get": {
                 "description": "Retrieves course outline for a specific department and course number",
                 "consumes": [
@@ -162,7 +162,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sections/{yearTerm}": {
+        "/v1/rest/sections/{yearTerm}": {
             "get": {
                 "description": "Retrieves all course sections for a specific year and term",
                 "consumes": [
@@ -224,7 +224,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sections/{yearTerm}/{dept}": {
+        "/v1/rest/sections/{yearTerm}/{dept}": {
             "get": {
                 "description": "Retrieves all course sections for a specific year, term, and department",
                 "consumes": [
@@ -293,7 +293,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sections/{yearTerm}/{dept}/{number}": {
+        "/v1/rest/sections/{yearTerm}/{dept}/{number}": {
             "get": {
                 "description": "Retrieves all course sections for a specific year, term, department, and course number",
                 "consumes": [
@@ -586,7 +586,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "",
 	Host:             "",
-	BasePath:         "/v1",
+	BasePath:         "/v1/rest",
 	Schemes:          []string{},
 	Title:            "SFU Courses API",
 	Description:      "",

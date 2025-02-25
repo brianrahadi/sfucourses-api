@@ -1,4 +1,4 @@
-basePath: /v1
+basePath: /v1/rest
 definitions:
   main.ErrorResponse:
     description: Error information
@@ -143,37 +143,7 @@ info:
   contact: {}
   title: SFU Courses API
 paths:
-  /outlines:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves a paginated list of all course outlines
-      parameters:
-      - description: Number of items to return (pagination)
-        in: query
-        name: limit
-        type: integer
-      - description: Number of items to skip (pagination offset)
-        in: query
-        name: offset
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: List of course outlines with pagination info
-          schema:
-            items:
-              $ref: '#/definitions/model.CourseOutline'
-            type: array
-        "404":
-          description: No course outlines found
-          schema:
-            $ref: '#/definitions/main.ErrorResponse'
-      summary: Get all course outlines
-      tags:
-      - outlines
-  /outlines/dept/{dept}:
+  /v1/rest/outlines/{dept}:
     get:
       consumes:
       - application/json
@@ -206,7 +176,7 @@ paths:
       summary: Get course outlines by department
       tags:
       - outlines
-  /outlines/dept/{dept}/number/{number}:
+  /v1/rest/outlines/{dept}/{number}:
     get:
       consumes:
       - application/json
@@ -240,7 +210,37 @@ paths:
       summary: Get specific course outline
       tags:
       - outlines
-  /sections/{yearTerm}:
+  /v1/rest/outlines/all:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of all course outlines
+      parameters:
+      - description: Number of items to return (pagination)
+        in: query
+        name: limit
+        type: integer
+      - description: Number of items to skip (pagination offset)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of course outlines with pagination info
+          schema:
+            items:
+              $ref: '#/definitions/model.CourseOutline'
+            type: array
+        "404":
+          description: No course outlines found
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get all course outlines
+      tags:
+      - outlines
+  /v1/rest/sections/{yearTerm}:
     get:
       consumes:
       - application/json
@@ -281,7 +281,7 @@ paths:
       summary: Get sections by term
       tags:
       - sections
-  /sections/{yearTerm}/{dept}:
+  /v1/rest/sections/{yearTerm}/{dept}:
     get:
       consumes:
       - application/json
@@ -327,7 +327,7 @@ paths:
       summary: Get sections by term and department
       tags:
       - sections
-  /sections/{yearTerm}/{dept}/{number}:
+  /v1/rest/sections/{yearTerm}/{dept}/{number}:
     get:
       consumes:
       - application/json

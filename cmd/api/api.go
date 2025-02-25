@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MarceloPetrucio/go-scalar-api-reference"
 	"github.com/brianrahadi/sfucourses-api/docs"
 	"github.com/brianrahadi/sfucourses-api/internal/store"
-	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 // application represents the application structure with configuration and data store
@@ -49,30 +49,24 @@ type gzipResponseWriter struct {
 func (app *application) mount() http.Handler {
 	mux := http.NewServeMux()
 
-	// // Middleware for recover and logging
-	// mux.HandleFunc("GET /", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	// 	if r.URL.Path != "/" {
-	// 		http.NotFound(w, r)
-	// 		return
-	// 	}
-	// 	w.Header().Set("Content-Type", "text/html")
-	// 	html := `
-	// 	<!DOCTYPE html>
-	// 	<html>
-	// 	<head>
-	// 		<title>Welcome</title>
-	// 	</head>
-	// 	<body>
-	// 		<h1>Welcome to SFU Courses API</h1>
-	// 		<p>Use the API to access course schedules and outlines.</p>
-	// 	</body>
-	// 	</html>
-	// 	`
-	// 	w.Write([]byte(html))
-	// }))
+	// docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
+	mux.HandleFunc("GET /reference", func(w http.ResponseWriter, r *http.Request) {
+		htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
+			SpecURL: "./docs/swagger.json",
+			CustomOptions: scalar.CustomOptions{
+				PageTitle: "Simple API",
+			},
+			DarkMode: true,
+		})
 
-	docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
-	mux.HandleFunc("GET /", httpSwagger.Handler(httpSwagger.URL(docsURL)))
+		if err != nil {
+			fmt.Printf("%v", err)
+		}
+
+		fmt.Fprintln(w, htmlContent)
+	})
+
+	// mux.HandleFunc("GET /swagger", httpSwagger.Handler(httpSwagger.URL(docsURL)))
 
 	//	@Summary		Health check endpoint
 	//	@Description	Check the health status of the API
@@ -205,7 +199,7 @@ func (app *application) run(mux http.Handler) error {
 	// Docs
 	docs.SwaggerInfo.Version = version
 	docs.SwaggerInfo.Host = app.config.apiURL
-	docs.SwaggerInfo.BasePath = "/v1"
+	// docs.SwaggerInfo.BasePath = "/v1/rest"
 	srv := &http.Server{
 		Addr:         app.config.addr,
 		Handler:      app.middleware(mux),
