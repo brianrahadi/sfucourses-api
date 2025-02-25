@@ -9,3 +9,7 @@ fetch-sections:
 .PHONY: sync-offerings
 sync-offerings:
 	go run scripts/syncOfferings/main.go
+
+.PHONY: gen-docs
+gen-docs:
+	@swag init -g ./api/main.go -d cmd,internal && swag fmt

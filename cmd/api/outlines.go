@@ -10,6 +10,18 @@ import (
 	"github.com/samber/mo"
 )
 
+// GetAllCourseOutlines godoc
+//
+//	@Summary		Get all course outlines
+//	@Description	Retrieves a paginated list of all course outlines
+//	@Tags			outlines
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int						false	"Number of items to return (pagination)"
+//	@Param			offset	query		int						false	"Number of items to skip (pagination offset)"
+//	@Success		200		{object}	[]model.CourseOutline	"List of course outlines with pagination info"
+//	@Failure		404		{object}	ErrorResponse			"No course outlines found"
+//	@Router			/outlines [get]
 func (app *application) getAllCourseOutlines(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -73,6 +85,16 @@ func (app *application) getAllCourseOutlines(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+// @Summary		Get course outlines by department
+// @Description	Retrieves all course outlines for a specific department
+// @Tags			outlines
+// @Accept			json
+// @Produce		json
+// @Param			dept	path		string					true	"Department code (e.g., CMPT, MATH)"
+// @Success		200		{array}		[]model.CourseOutline	"List of course outlines for the department"
+// @Failure		404		{object}	ErrorResponse			"Department not found or no courses available"
+// @Failure		500		{object}	ErrorResponse			"Internal server error"
+// @Router			/outlines/dept/{dept} [get]
 func (app *application) getCourseOutlinesByDept(w http.ResponseWriter, r *http.Request) {
 	dept := r.PathValue("dept")
 	ctx := r.Context()
@@ -94,6 +116,17 @@ func (app *application) getCourseOutlinesByDept(w http.ResponseWriter, r *http.R
 	}
 }
 
+// @Summary		Get specific course outline
+// @Description	Retrieves course outline for a specific department and course number
+// @Tags			outlines
+// @Accept			json
+// @Produce		json
+// @Param			dept	path		string				true	"Department code (e.g., CMPT, MATH)"
+// @Param			number	path		string				true	"Course number (e.g., 120, 225)"
+// @Success		200		{object}	model.CourseOutline	"Course outline details"
+// @Failure		404		{object}	ErrorResponse		"Course not found"
+// @Failure		500		{object}	ErrorResponse		"Internal server error"
+// @Router			/outlines/dept/{dept}/number/{number} [get]
 func (app *application) getCourseOutlinesByDeptAndNumber(w http.ResponseWriter, r *http.Request) {
 	dept := r.PathValue("dept")
 	number := r.PathValue("number")

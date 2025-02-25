@@ -1,10 +1,3 @@
-// Package main provides the entry point for the SFU Courses API.
-//
-// @title SFU Courses API
-// @version 0.0.1
-// @description API for accessing SFU course schedules and outlines
-// @host api.sfucourses.com
-// @BasePath /v1/rest
 package main
 
 import (
@@ -16,11 +9,20 @@ import (
 // Version of the API
 const version = "0.0.1"
 
-// @Summary Application entry point
-// @Description Main entry point for the SFU Courses API
+// Package main provides the entry point for the SFU Courses API.
+//
+//	@title			SFU Courses API
+//	@description	API for accessing SFU course outlines, sections, and instructors
+//	@BasePath		/v1/rest
+
+//	@BasePath	/v1
+//
+//	@description
 func main() {
 	cfg := config{
-		addr: ":8080",
+		addr:   ":8080",
+		env:    "dev",
+		apiURL: "localhost:8080",
 	}
 
 	store := store.NewStorage()
