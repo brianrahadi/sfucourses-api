@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/MarceloPetrucio/go-scalar-api-reference"
-	"github.com/brianrahadi/sfucourses-api/docs"
 	"github.com/brianrahadi/sfucourses-api/internal/store"
 )
 
@@ -72,7 +71,7 @@ func (app *application) mount() http.Handler {
 
 	// docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
+		if r.URL.Path != "/" && r.URL.Path != "/docs" {
 			http.NotFound(w, r)
 			return
 		}
@@ -91,81 +90,14 @@ func (app *application) mount() http.Handler {
 		fmt.Fprintln(w, htmlContent)
 	})
 
-	// mux.HandleFunc("GET /swagger", httpSwagger.Handler(httpSwagger.URL(docsURL)))
+	mux.HandleFunc("GET /health", app.healthCheckHandler)
 
-	//	@Summary		Health check endpoint
-	//	@Description	Check the health status of the API
-	//	@Tags			health
-	//	@Produce		json
-	//	@Success		200	{object}	HealthResponse
-	//	@Router			/health [get]
-	mux.HandleFunc("GET /v1/rest/health", app.healthCheckHandler)
-
-	//	@Summary		Get all course outlines
-	//	@Description	Retrieve all available course outlines
-	//	@Tags			outlines
-	//	@Produce		json
-	//	@Success		200	{array}		OutlineResponse
-	//	@Failure		500	{object}	ErrorResponse
-	//	@Router			/outlines/all [get]
 	mux.HandleFunc("GET /v1/rest/outlines/all", app.getAllCourseOutlines)
-
-	//	@Summary		Get course outlines by department
-	//	@Description	Retrieve course outlines for a specific department
-	//	@Tags			outlines
-	//	@Produce		json
-	//	@Param			dept	path		string	true	"Department code (e.g., CMPT)"
-	//	@Success		200		{array}		OutlineResponse
-	//	@Failure		400		{object}	ErrorResponse
-	//	@Failure		404		{object}	ErrorResponse
-	//	@Router			/outlines/{dept} [get]
 	mux.HandleFunc("GET /v1/rest/outlines/{dept}", app.getCourseOutlinesByDept)
-
-	//	@Summary		Get course outlines by department and number
-	//	@Description	Retrieve course outlines for a specific department and course number
-	//	@Tags			outlines
-	//	@Produce		json
-	//	@Param			dept	path		string	true	"Department code (e.g., CMPT)"
-	//	@Param			number	path		string	true	"Course number (e.g., 120)"
-	//	@Success		200		{array}		OutlineResponse
-	//	@Failure		400		{object}	ErrorResponse
-	//	@Failure		404		{object}	ErrorResponse
-	//	@Router			/outlines/{dept}/{number} [get]
 	mux.HandleFunc("GET /v1/rest/outlines/{dept}/{number}", app.getCourseOutlinesByDeptAndNumber)
 
-	//	@Summary		Get sections by term
-	//	@Description	Retrieve course sections for a specific term
-	//	@Tags			sections
-	//	@Produce		json
-	//	@Param			yearTerm	path		string	true	"Year and term (e.g., 2025-summer)"
-	//	@Success		200			{array}		SectionResponse
-	//	@Failure		400			{object}	ErrorResponse
-	//	@Router			/sections/{yearTerm} [get]
 	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}", app.getSectionsByTerm)
-
-	//	@Summary		Get sections by term and department
-	//	@Description	Retrieve course sections for a specific term and department
-	//	@Tags			sections
-	//	@Produce		json
-	//	@Param			yearTerm	path		string	true	"Year and term (e.g., 2025-summer)"
-	//	@Param			dept		path		string	true	"Department code (e.g., CMPT)"
-	//	@Success		200			{array}		SectionResponse
-	//	@Failure		400			{object}	ErrorResponse
-	//	@Failure		404			{object}	ErrorResponse
-	//	@Router			/sections/{yearTerm}/{dept} [get]
 	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}/{dept}", app.getSectionsByTermAndDept)
-
-	//	@Summary		Get sections by term, department, and course number
-	//	@Description	Retrieve course sections for a specific term, department, and course number
-	//	@Tags			sections
-	//	@Produce		json
-	//	@Param			yearTerm	path		string	true	"Year and term (e.g., 2023-3)"
-	//	@Param			dept		path		string	true	"Department code (e.g., CMPT)"
-	//	@Param			number		path		string	true	"Course number (e.g., 120)"
-	//	@Success		200			{array}		SectionResponse
-	//	@Failure		400			{object}	ErrorResponse
-	//	@Failure		404			{object}	ErrorResponse
-	//	@Router			/sections/{yearTerm}/{dept}/{number} [get]
 	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}/{dept}/{number}", app.getSectionsByTermAndDeptAndNumber)
 
 	return mux
@@ -221,10 +153,10 @@ func (app *application) middleware(next http.Handler) http.Handler {
 //	@Description	Start the HTTP server with the provided handler and configuration
 func (app *application) run(mux http.Handler) error {
 
-	// Docs
-	docs.SwaggerInfo.Version = version
-	docs.SwaggerInfo.Host = "api.sfucourses.com"
-	// docs.SwaggerInfo.BasePath = "/v1/rest"
+	// // Docs
+	// docs.SwaggerInfo.Version = version
+	// docs.SwaggerInfo.Host = "api.sfucourses.com"
+	// // docs.SwaggerInfo.BasePath = "/v1/rest"
 	srv := &http.Server{
 		Addr:         app.config.addr,
 		Handler:      app.middleware(mux),

@@ -1,4 +1,3 @@
-basePath: /v1/rest
 definitions:
   main.ErrorResponse:
     description: Error information
@@ -6,6 +5,14 @@ definitions:
       error:
         type: string
       message:
+        type: string
+    type: object
+  main.HealthResponse:
+    description: Health check status information
+    properties:
+      status:
+        type: string
+      version:
         type: string
     type: object
   model.CourseOffering:
@@ -144,7 +151,24 @@ info:
   contact: {}
   title: SFU Courses API
 paths:
-  /outlines/{dept}:
+  /health:
+    get:
+      description: Returns status and version information about the API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns status and version information
+          schema:
+            $ref: '#/definitions/main.HealthResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Health check endpoint
+      tags:
+      - Health
+  /v1/rest/outlines/{dept}:
     get:
       consumes:
       - application/json
@@ -176,8 +200,8 @@ paths:
             $ref: '#/definitions/main.ErrorResponse'
       summary: Get course outlines by department
       tags:
-      - outlines
-  /outlines/{dept}/{number}:
+      - Outlines
+  /v1/rest/outlines/{dept}/{number}:
     get:
       consumes:
       - application/json
@@ -210,8 +234,8 @@ paths:
             $ref: '#/definitions/main.ErrorResponse'
       summary: Get specific course outline
       tags:
-      - outlines
-  /outlines/all:
+      - Outlines
+  /v1/rest/outlines/all:
     get:
       consumes:
       - application/json
@@ -240,8 +264,8 @@ paths:
             $ref: '#/definitions/main.ErrorResponse'
       summary: Get all course outlines
       tags:
-      - outlines
-  /sections/{yearTerm}:
+      - Outlines
+  /v1/rest/sections/{year-term}:
     get:
       consumes:
       - application/json
@@ -249,7 +273,7 @@ paths:
       parameters:
       - description: Year and term in format YYYY-Term (e.g., 2024-Spring)
         in: path
-        name: yearTerm
+        name: year-term
         required: true
         type: string
       - description: 'Whether to include course outline data (default: false)'
@@ -268,7 +292,7 @@ paths:
               type: array
             type: array
         "400":
-          description: Invalid yearTerm format or query parameters
+          description: Invalid year-term format or query parameters
           schema:
             $ref: '#/definitions/main.ErrorResponse'
         "404":
@@ -281,8 +305,8 @@ paths:
             $ref: '#/definitions/main.ErrorResponse'
       summary: Get sections by term
       tags:
-      - sections
-  /sections/{yearTerm}/{dept}:
+      - Sections
+  /v1/rest/sections/{year-term}/{dept}:
     get:
       consumes:
       - application/json
@@ -290,7 +314,7 @@ paths:
       parameters:
       - description: Year and term in format YYYY-Term (e.g., 2024-Spring)
         in: path
-        name: yearTerm
+        name: year-term
         required: true
         type: string
       - description: Department code (e.g., CMPT, MATH)
@@ -314,7 +338,7 @@ paths:
               type: array
             type: array
         "400":
-          description: Invalid yearTerm format or query parameters
+          description: Invalid year-term format or query parameters
           schema:
             $ref: '#/definitions/main.ErrorResponse'
         "404":
@@ -327,8 +351,8 @@ paths:
             $ref: '#/definitions/main.ErrorResponse'
       summary: Get sections by term and department
       tags:
-      - sections
-  /sections/{yearTerm}/{dept}/{number}:
+      - Sections
+  /v1/rest/sections/{year-term}/{dept}/{number}:
     get:
       consumes:
       - application/json
@@ -337,7 +361,7 @@ paths:
       parameters:
       - description: Year and term in format YYYY-Term (e.g., 2024-Spring)
         in: path
-        name: yearTerm
+        name: year-term
         required: true
         type: string
       - description: Department code (e.g., CMPT, MATH)
@@ -366,7 +390,7 @@ paths:
               type: array
             type: array
         "400":
-          description: Invalid yearTerm format or query parameters
+          description: Invalid year-term format or query parameters
           schema:
             $ref: '#/definitions/main.ErrorResponse'
         "404":
@@ -379,5 +403,5 @@ paths:
             $ref: '#/definitions/main.ErrorResponse'
       summary: Get sections by term, department, and course number
       tags:
-      - sections
+      - Sections
 swagger: "2.0"

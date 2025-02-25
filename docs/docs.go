@@ -15,7 +15,33 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/outlines/all": {
+        "/health": {
+            "get": {
+                "description": "Returns status and version information about the API",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Health check endpoint",
+                "responses": {
+                    "200": {
+                        "description": "Returns status and version information",
+                        "schema": {
+                            "$ref": "#/definitions/main.HealthResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rest/outlines/all": {
             "get": {
                 "description": "Retrieves a paginated list of all course outlines",
                 "consumes": [
@@ -25,7 +51,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "outlines"
+                    "Outlines"
                 ],
                 "summary": "Get all course outlines",
                 "parameters": [
@@ -61,7 +87,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/outlines/{dept}": {
+        "/v1/rest/outlines/{dept}": {
             "get": {
                 "description": "Retrieves all course outlines for a specific department",
                 "consumes": [
@@ -71,7 +97,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "outlines"
+                    "Outlines"
                 ],
                 "summary": "Get course outlines by department",
                 "parameters": [
@@ -111,7 +137,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/outlines/{dept}/{number}": {
+        "/v1/rest/outlines/{dept}/{number}": {
             "get": {
                 "description": "Retrieves course outline for a specific department and course number",
                 "consumes": [
@@ -121,7 +147,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "outlines"
+                    "Outlines"
                 ],
                 "summary": "Get specific course outline",
                 "parameters": [
@@ -162,7 +188,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sections/{yearTerm}": {
+        "/v1/rest/sections/{year-term}": {
             "get": {
                 "description": "Retrieves all course sections for a specific year and term",
                 "consumes": [
@@ -172,14 +198,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "sections"
+                    "Sections"
                 ],
                 "summary": "Get sections by term",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Year and term in format YYYY-Term (e.g., 2024-Spring)",
-                        "name": "yearTerm",
+                        "name": "year-term",
                         "in": "path",
                         "required": true
                     },
@@ -204,7 +230,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid yearTerm format or query parameters",
+                        "description": "Invalid year-term format or query parameters",
                         "schema": {
                             "$ref": "#/definitions/main.ErrorResponse"
                         }
@@ -224,7 +250,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sections/{yearTerm}/{dept}": {
+        "/v1/rest/sections/{year-term}/{dept}": {
             "get": {
                 "description": "Retrieves all course sections for a specific year, term, and department",
                 "consumes": [
@@ -234,14 +260,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "sections"
+                    "Sections"
                 ],
                 "summary": "Get sections by term and department",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Year and term in format YYYY-Term (e.g., 2024-Spring)",
-                        "name": "yearTerm",
+                        "name": "year-term",
                         "in": "path",
                         "required": true
                     },
@@ -273,7 +299,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid yearTerm format or query parameters",
+                        "description": "Invalid year-term format or query parameters",
                         "schema": {
                             "$ref": "#/definitions/main.ErrorResponse"
                         }
@@ -293,7 +319,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sections/{yearTerm}/{dept}/{number}": {
+        "/v1/rest/sections/{year-term}/{dept}/{number}": {
             "get": {
                 "description": "Retrieves all course sections for a specific year, term, department, and course number",
                 "consumes": [
@@ -303,14 +329,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "sections"
+                    "Sections"
                 ],
                 "summary": "Get sections by term, department, and course number",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Year and term in format YYYY-Term (e.g., 2024-Spring)",
-                        "name": "yearTerm",
+                        "name": "year-term",
                         "in": "path",
                         "required": true
                     },
@@ -349,7 +375,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid yearTerm format or query parameters",
+                        "description": "Invalid year-term format or query parameters",
                         "schema": {
                             "$ref": "#/definitions/main.ErrorResponse"
                         }
@@ -379,6 +405,18 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.HealthResponse": {
+            "description": "Health check status information",
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                },
+                "version": {
                     "type": "string"
                 }
             }
@@ -586,7 +624,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "",
 	Host:             "api.sfucourses.com",
-	BasePath:         "/v1/rest",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "SFU Courses API",
 	Description:      "",
