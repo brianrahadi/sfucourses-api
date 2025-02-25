@@ -1,0 +1,383 @@
+basePath: /v1/rest
+definitions:
+  main.ErrorResponse:
+    description: Error information
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  model.CourseOffering:
+    properties:
+      instructors:
+        items:
+          type: string
+        type: array
+      term:
+        type: string
+    type: object
+  model.CourseOutline:
+    properties:
+      corequisites:
+        type: string
+      degreeLevel:
+        type: string
+      deliveryMethod:
+        type: string
+      dept:
+        type: string
+      description:
+        type: string
+      designation:
+        type: string
+      notes:
+        type: string
+      number:
+        type: string
+      offerings:
+        items:
+          $ref: '#/definitions/model.CourseOffering'
+        type: array
+      prerequisites:
+        type: string
+      title:
+        type: string
+      units:
+        type: string
+    type: object
+  model.CourseOutlineWithSectionDetails:
+    properties:
+      corequisites:
+        type: string
+      deliveryMethod:
+        type: string
+      dept:
+        type: string
+      description:
+        type: string
+      designation:
+        type: string
+      number:
+        type: string
+      prerequisites:
+        type: string
+      sections:
+        items:
+          $ref: '#/definitions/model.SectionDetail'
+        type: array
+      term:
+        type: string
+      title:
+        type: string
+      units:
+        type: string
+    type: object
+  model.CourseWithSectionDetails:
+    properties:
+      dept:
+        description: CMPT
+        type: string
+      number:
+        description: "225"
+        type: string
+      sections:
+        items:
+          $ref: '#/definitions/model.SectionDetail'
+        type: array
+      term:
+        description: Fall 2024
+        type: string
+      title:
+        description: Data Structure and Algorithms
+        type: string
+      units:
+        description: "3"
+        type: string
+    type: object
+  model.Instructor:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    type: object
+  model.SectionDetail:
+    properties:
+      classNumber:
+        description: "6327"
+        type: string
+      deliveryMethod:
+        description: In Person
+        type: string
+      instructors:
+        items:
+          $ref: '#/definitions/model.Instructor'
+        type: array
+      schedules:
+        items:
+          $ref: '#/definitions/model.SectionSchedule'
+        type: array
+      section:
+        description: D100
+        type: string
+    type: object
+  model.SectionSchedule:
+    properties:
+      campus:
+        type: string
+      days:
+        type: string
+      endDate:
+        type: string
+      endTime:
+        type: string
+      sectionCode:
+        type: string
+      startDate:
+        type: string
+      startTime:
+        type: string
+    type: object
+host: api.sfucourses.com
+info:
+  contact: {}
+  title: SFU Courses API
+paths:
+  /outlines/{dept}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all course outlines for a specific department
+      parameters:
+      - description: Department code (e.g., CMPT, MATH)
+        in: path
+        name: dept
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of course outlines for the department
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/model.CourseOutline'
+              type: array
+            type: array
+        "404":
+          description: Department not found or no courses available
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get course outlines by department
+      tags:
+      - outlines
+  /outlines/{dept}/{number}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves course outline for a specific department and course number
+      parameters:
+      - description: Department code (e.g., CMPT, MATH)
+        in: path
+        name: dept
+        required: true
+        type: string
+      - description: Course number (e.g., 120, 225)
+        in: path
+        name: number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Course outline details
+          schema:
+            $ref: '#/definitions/model.CourseOutline'
+        "404":
+          description: Course not found
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get specific course outline
+      tags:
+      - outlines
+  /outlines/all:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of all course outlines
+      parameters:
+      - description: Number of items to return (pagination)
+        in: query
+        name: limit
+        type: integer
+      - description: Number of items to skip (pagination offset)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of course outlines with pagination info
+          schema:
+            items:
+              $ref: '#/definitions/model.CourseOutline'
+            type: array
+        "404":
+          description: No course outlines found
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get all course outlines
+      tags:
+      - outlines
+  /sections/{yearTerm}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all course sections for a specific year and term
+      parameters:
+      - description: Year and term in format YYYY-Term (e.g., 2024-Spring)
+        in: path
+        name: yearTerm
+        required: true
+        type: string
+      - description: 'Whether to include course outline data (default: false)'
+        in: query
+        name: withOutlines
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of sections with outlines (if withOutlines=true)
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/model.CourseOutlineWithSectionDetails'
+              type: array
+            type: array
+        "400":
+          description: Invalid yearTerm format or query parameters
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "404":
+          description: No sections found for the specified term
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get sections by term
+      tags:
+      - sections
+  /sections/{yearTerm}/{dept}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all course sections for a specific year, term, and department
+      parameters:
+      - description: Year and term in format YYYY-Term (e.g., 2024-Spring)
+        in: path
+        name: yearTerm
+        required: true
+        type: string
+      - description: Department code (e.g., CMPT, MATH)
+        in: path
+        name: dept
+        required: true
+        type: string
+      - description: 'Whether to include course outline data (default: false)'
+        in: query
+        name: withOutlines
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of sections with outlines (if withOutlines=true)
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/model.CourseOutlineWithSectionDetails'
+              type: array
+            type: array
+        "400":
+          description: Invalid yearTerm format or query parameters
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "404":
+          description: No sections found for the specified term and department
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get sections by term and department
+      tags:
+      - sections
+  /sections/{yearTerm}/{dept}/{number}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all course sections for a specific year, term, department,
+        and course number
+      parameters:
+      - description: Year and term in format YYYY-Term (e.g., 2024-Spring)
+        in: path
+        name: yearTerm
+        required: true
+        type: string
+      - description: Department code (e.g., CMPT, MATH)
+        in: path
+        name: dept
+        required: true
+        type: string
+      - description: Course number (e.g., 120, 225)
+        in: path
+        name: number
+        required: true
+        type: string
+      - description: 'Whether to include course outline data (default: false)'
+        in: query
+        name: withOutlines
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of sections with outlines (if withOutlines=true)
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/model.CourseOutlineWithSectionDetails'
+              type: array
+            type: array
+        "400":
+          description: Invalid yearTerm format or query parameters
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "404":
+          description: No sections found for the specified criteria
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get sections by term, department, and course number
+      tags:
+      - sections
+swagger: "2.0"

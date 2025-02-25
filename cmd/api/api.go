@@ -75,7 +75,7 @@ func (app *application) mount() http.Handler {
 		htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
 			SpecURL: "./docs/swagger.json",
 			CustomOptions: scalar.CustomOptions{
-				PageTitle: "Simple API",
+				PageTitle: "SFU Courses API",
 			},
 			DarkMode: true,
 		})

@@ -1,0 +1,575 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "SFU Courses API",
+        "contact": {}
+    },
+    "host": "api.sfucourses.com",
+    "basePath": "/v1/rest",
+    "paths": {
+        "/outlines/all": {
+            "get": {
+                "description": "Retrieves a paginated list of all course outlines",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "outlines"
+                ],
+                "summary": "Get all course outlines",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Number of items to return (pagination)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items to skip (pagination offset)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of course outlines with pagination info",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.CourseOutline"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No course outlines found",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/outlines/{dept}": {
+            "get": {
+                "description": "Retrieves all course outlines for a specific department",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "outlines"
+                ],
+                "summary": "Get course outlines by department",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Department code (e.g., CMPT, MATH)",
+                        "name": "dept",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of course outlines for the department",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/model.CourseOutline"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Department not found or no courses available",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/outlines/{dept}/{number}": {
+            "get": {
+                "description": "Retrieves course outline for a specific department and course number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "outlines"
+                ],
+                "summary": "Get specific course outline",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Department code (e.g., CMPT, MATH)",
+                        "name": "dept",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Course number (e.g., 120, 225)",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Course outline details",
+                        "schema": {
+                            "$ref": "#/definitions/model.CourseOutline"
+                        }
+                    },
+                    "404": {
+                        "description": "Course not found",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/sections/{yearTerm}": {
+            "get": {
+                "description": "Retrieves all course sections for a specific year and term",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sections"
+                ],
+                "summary": "Get sections by term",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Year and term in format YYYY-Term (e.g., 2024-Spring)",
+                        "name": "yearTerm",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Whether to include course outline data (default: false)",
+                        "name": "withOutlines",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of sections with outlines (if withOutlines=true)",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/model.CourseOutlineWithSectionDetails"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid yearTerm format or query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "No sections found for the specified term",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/sections/{yearTerm}/{dept}": {
+            "get": {
+                "description": "Retrieves all course sections for a specific year, term, and department",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sections"
+                ],
+                "summary": "Get sections by term and department",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Year and term in format YYYY-Term (e.g., 2024-Spring)",
+                        "name": "yearTerm",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Department code (e.g., CMPT, MATH)",
+                        "name": "dept",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Whether to include course outline data (default: false)",
+                        "name": "withOutlines",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of sections with outlines (if withOutlines=true)",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/model.CourseOutlineWithSectionDetails"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid yearTerm format or query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "No sections found for the specified term and department",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/sections/{yearTerm}/{dept}/{number}": {
+            "get": {
+                "description": "Retrieves all course sections for a specific year, term, department, and course number",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sections"
+                ],
+                "summary": "Get sections by term, department, and course number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Year and term in format YYYY-Term (e.g., 2024-Spring)",
+                        "name": "yearTerm",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Department code (e.g., CMPT, MATH)",
+                        "name": "dept",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Course number (e.g., 120, 225)",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Whether to include course outline data (default: false)",
+                        "name": "withOutlines",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of sections with outlines (if withOutlines=true)",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/model.CourseOutlineWithSectionDetails"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid yearTerm format or query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "No sections found for the specified criteria",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "main.ErrorResponse": {
+            "description": "Error information",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CourseOffering": {
+            "type": "object",
+            "properties": {
+                "instructors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "term": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CourseOutline": {
+            "type": "object",
+            "properties": {
+                "corequisites": {
+                    "type": "string"
+                },
+                "degreeLevel": {
+                    "type": "string"
+                },
+                "deliveryMethod": {
+                    "type": "string"
+                },
+                "dept": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "designation": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "offerings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.CourseOffering"
+                    }
+                },
+                "prerequisites": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "units": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CourseOutlineWithSectionDetails": {
+            "type": "object",
+            "properties": {
+                "corequisites": {
+                    "type": "string"
+                },
+                "deliveryMethod": {
+                    "type": "string"
+                },
+                "dept": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "designation": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "prerequisites": {
+                    "type": "string"
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SectionDetail"
+                    }
+                },
+                "term": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "units": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CourseWithSectionDetails": {
+            "type": "object",
+            "properties": {
+                "dept": {
+                    "description": "CMPT",
+                    "type": "string"
+                },
+                "number": {
+                    "description": "225",
+                    "type": "string"
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SectionDetail"
+                    }
+                },
+                "term": {
+                    "description": "Fall 2024",
+                    "type": "string"
+                },
+                "title": {
+                    "description": "Data Structure and Algorithms",
+                    "type": "string"
+                },
+                "units": {
+                    "description": "3",
+                    "type": "string"
+                }
+            }
+        },
+        "model.Instructor": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SectionDetail": {
+            "type": "object",
+            "properties": {
+                "classNumber": {
+                    "description": "6327",
+                    "type": "string"
+                },
+                "deliveryMethod": {
+                    "description": "In Person",
+                    "type": "string"
+                },
+                "instructors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Instructor"
+                    }
+                },
+                "schedules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SectionSchedule"
+                    }
+                },
+                "section": {
+                    "description": "D100",
+                    "type": "string"
+                }
+            }
+        },
+        "model.SectionSchedule": {
+            "type": "object",
+            "properties": {
+                "campus": {
+                    "type": "string"
+                },
+                "days": {
+                    "type": "string"
+                },
+                "endDate": {
+                    "type": "string"
+                },
+                "endTime": {
+                    "type": "string"
+                },
+                "sectionCode": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
