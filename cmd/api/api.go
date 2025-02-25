@@ -80,6 +80,7 @@ func (app *application) mount() http.Handler {
 			CustomOptions: scalar.CustomOptions{
 				PageTitle: "SFU Courses API",
 			},
+			Theme:    scalar.ThemeDefault,
 			DarkMode: true,
 		})
 
