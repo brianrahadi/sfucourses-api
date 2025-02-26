@@ -11,8 +11,10 @@ definitions:
     description: Health check status information
     properties:
       status:
+        example: ok
         type: string
       version:
+        example: 1.0.0
         type: string
     type: object
   model.AllCourseOutlinesResponse:
@@ -169,8 +171,9 @@ host: api.sfucourses.com
 info:
   contact: {}
   description: Unofficial API for accessing SFU course outlines, sections, and instructors
-    in a seamless way. All data is pulled from SFU Course Outline REST API. This API
-    is not affiliated with Simon Fraser University.
+    robustly and used to power [sfucourses.com](https://sfucourses.com). Data is pulled
+    from [SFU Course Outlines REST API](https://www.sfu.ca/outlines/help/api.html).
+    This API is not affiliated with Simon Fraser University.
   title: SFU Courses API
 paths:
   /health:

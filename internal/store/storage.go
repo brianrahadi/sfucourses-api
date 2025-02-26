@@ -5,7 +5,7 @@ import (
 	"errors"
 	"log"
 
-	. "github.com/brianrahadi/sfucourses-api/internal/model"
+	"github.com/brianrahadi/sfucourses-api/internal/model"
 	"github.com/samber/mo"
 )
 
@@ -15,21 +15,21 @@ var (
 
 type Storage struct {
 	Outlines interface {
-		GetAll(context.Context, mo.Option[int], mo.Option[int]) ([]CourseOutline, int, error)
-		GetByDept(context.Context, string) ([]CourseOutline, error)
-		GetByDeptAndNumber(context.Context, string, string) (CourseOutline, error)
+		GetAll(context.Context, mo.Option[int], mo.Option[int]) ([]model.CourseOutline, int, error)
+		GetByDept(context.Context, string) ([]model.CourseOutline, error)
+		GetByDeptAndNumber(context.Context, string, string) (model.CourseOutline, error)
 	}
 
 	Sections interface {
-		GetByTerm(context.Context, string, string) ([]CourseWithSectionDetails, error)
-		GetByTermAndDept(context.Context, string, string, string) ([]CourseWithSectionDetails, error)
-		GetByTermAndDeptAndNumber(context.Context, string, string, string, string) (CourseWithSectionDetails, error)
+		GetByTerm(context.Context, string, string) ([]model.CourseWithSectionDetails, error)
+		GetByTermAndDept(context.Context, string, string, string) ([]model.CourseWithSectionDetails, error)
+		GetByTermAndDeptAndNumber(context.Context, string, string, string, string) (model.CourseWithSectionDetails, error)
 	}
 
 	SectionsWithOutlines interface {
-		GetByTerm(context.Context, string, string) ([]CourseOutlineWithSectionDetails, error)
-		GetByTermAndDept(context.Context, string, string, string) ([]CourseOutlineWithSectionDetails, error)
-		GetByTermAndDeptAndNumber(context.Context, string, string, string, string) (CourseOutlineWithSectionDetails, error)
+		GetByTerm(context.Context, string, string) ([]model.CourseOutlineWithSectionDetails, error)
+		GetByTermAndDept(context.Context, string, string, string) ([]model.CourseOutlineWithSectionDetails, error)
+		GetByTermAndDeptAndNumber(context.Context, string, string, string, string) (model.CourseOutlineWithSectionDetails, error)
 	}
 }
 

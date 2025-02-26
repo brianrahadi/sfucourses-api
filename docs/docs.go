@@ -411,10 +411,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "ok"
                 },
                 "version": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "1.0.0"
                 }
             }
         },
@@ -648,7 +650,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "",
 	Schemes:          []string{"https"},
 	Title:            "SFU Courses API",
-	Description:      "Unofficial API for accessing SFU course outlines, sections, and instructors in a seamless way. All data is pulled from SFU Course Outline REST API. This API is not affiliated with Simon Fraser University.",
+	Description:      "Unofficial API for accessing SFU course outlines, sections, and instructors robustly and used to power [sfucourses.com](https://sfucourses.com). Data is pulled from [SFU Course Outlines REST API](https://www.sfu.ca/outlines/help/api.html). This API is not affiliated with Simon Fraser University.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
