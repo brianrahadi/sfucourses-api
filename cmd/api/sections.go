@@ -38,13 +38,12 @@ func getWithOutlines(app *application, w http.ResponseWriter, r *http.Request) b
 // @Tags			Sections
 // @Accept			json
 // @Produce		json
-// @Param			year-term		path		string									true	"Year and term in format YYYY-Term (e.g., 2024-Spring)"
-// @Param			withOutlines	query		boolean									false	"Whether to include course outline data (default: false)"
-// @Success		200				{array}		[]model.CourseWithSectionDetails		"List of sections without outlines"
-// @Success		200				{array}		[]model.CourseOutlineWithSectionDetails	"List of sections with outlines (if withOutlines=true)"
-// @Failure		400				{object}	ErrorResponse							"Invalid year-term format or query parameters"
-// @Failure		404				{object}	ErrorResponse							"No sections found for the specified term"
-// @Failure		500				{object}	ErrorResponse							"Internal server error"
+// @Param			year-term		path		string								true	"Year and term in format YYYY-Term (e.g., 2024-Spring)"
+// @Param			withOutlines	query		boolean								false	"Whether to include course outline data (default: false)"
+// @Success		200				{array}		[]model.CourseWithSectionDetails	"List of sections without outlines"
+// @Failure		400				{object}	ErrorResponse						"Invalid year-term format or query parameters"
+// @Failure		404				{object}	ErrorResponse						"No sections found for the specified term"
+// @Failure		500				{object}	ErrorResponse						"Internal server error"
 // @Router			/v1/rest/sections/{year-term} [get]
 func (app *application) getSectionsByTerm(w http.ResponseWriter, r *http.Request) {
 	yearTerm := r.PathValue("yearTerm")
@@ -99,14 +98,13 @@ func (app *application) getSectionsByTerm(w http.ResponseWriter, r *http.Request
 // @Tags			Sections
 // @Accept			json
 // @Produce		json
-// @Param			year-term		path		string									true	"Year and term in format YYYY-Term (e.g., 2024-Spring)"
-// @Param			dept			path		string									true	"Department code (e.g., CMPT, MATH)"
-// @Param			withOutlines	query		boolean									false	"Whether to include course outline data (default: false)"
-// @Success		200				{array}		[]model.CourseWithSectionDetails		"List of sections without outlines"
-// @Success		200				{array}		[]model.CourseOutlineWithSectionDetails	"List of sections with outlines (if withOutlines=true)"
-// @Failure		400				{object}	ErrorResponse							"Invalid year-term format or query parameters"
-// @Failure		404				{object}	ErrorResponse							"No sections found for the specified term and department"
-// @Failure		500				{object}	ErrorResponse							"Internal server error"
+// @Param			year-term		path		string								true	"Year and term in format YYYY-Term (e.g., 2024-Spring)"
+// @Param			dept			path		string								true	"Department code (e.g., CMPT, MATH)"
+// @Param			withOutlines	query		boolean								false	"Whether to include course outline data (default: false)"
+// @Success		200				{array}		[]model.CourseWithSectionDetails	"List of sections without outlines"
+// @Failure		400				{object}	ErrorResponse						"Invalid year-term format or query parameters"
+// @Failure		404				{object}	ErrorResponse						"No sections found for the specified term and department"
+// @Failure		500				{object}	ErrorResponse						"Internal server error"
 // @Router			/v1/rest/sections/{year-term}/{dept} [get]
 func (app *application) getSectionsByTermAndDept(w http.ResponseWriter, r *http.Request) {
 	yearTerm := r.PathValue("yearTerm")
@@ -161,15 +159,14 @@ func (app *application) getSectionsByTermAndDept(w http.ResponseWriter, r *http.
 // @Tags			Sections
 // @Accept			json
 // @Produce		json
-// @Param			year-term		path		string									true	"Year and term in format YYYY-Term (e.g., 2024-Spring)"
-// @Param			dept			path		string									true	"Department code (e.g., CMPT, MATH)"
-// @Param			number			path		string									true	"Course number (e.g., 120, 225)"
-// @Param			withOutlines	query		boolean									false	"Whether to include course outline data (default: false)"
-// @Success		200				{array}		[]model.CourseWithSectionDetails		"List of sections without outlines"
-// @Success		200				{array}		[]model.CourseOutlineWithSectionDetails	"List of sections with outlines (if withOutlines=true)"
-// @Failure		400				{object}	ErrorResponse							"Invalid year-term format or query parameters"
-// @Failure		404				{object}	ErrorResponse							"No sections found for the specified criteria"
-// @Failure		500				{object}	ErrorResponse							"Internal server error"
+// @Param			year-term		path		string								true	"Year and term in format YYYY-Term (e.g., 2024-Spring)"
+// @Param			dept			path		string								true	"Department code (e.g., CMPT, MATH)"
+// @Param			number			path		string								true	"Course number (e.g., 120, 225)"
+// @Param			withOutlines	query		boolean								false	"Whether to include course outline data (default: false)"
+// @Success		200				{array}		[]model.CourseWithSectionDetails	"List of sections without outlines"
+// @Failure		400				{object}	ErrorResponse						"Invalid year-term format or query parameters"
+// @Failure		404				{object}	ErrorResponse						"No sections found for the specified criteria"
+// @Failure		500				{object}	ErrorResponse						"Internal server error"
 // @Router			/v1/rest/sections/{year-term}/{dept}/{number} [get]
 func (app *application) getSectionsByTermAndDeptAndNumber(w http.ResponseWriter, r *http.Request) {
 	yearTerm := r.PathValue("yearTerm")

@@ -4,6 +4,7 @@
     ],
     "swagger": "2.0",
     "info": {
+        "description": "Unofficial API for accessing SFU course outlines, sections, and instructors in a seamless way. All data is pulled from SFU Course Outline REST API. This API is not affiliated with Simon Fraser University.",
         "title": "SFU Courses API",
         "contact": {}
     },
@@ -64,12 +65,9 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of course outlines with pagination info",
+                        "description": "Response for course outlines",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.CourseOutline"
-                            }
+                            "$ref": "#/definitions/model.AllCourseOutlinesResponse"
                         }
                     },
                     "404": {
@@ -212,13 +210,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of sections with outlines (if withOutlines=true)",
+                        "description": "List of sections without outlines",
                         "schema": {
                             "type": "array",
                             "items": {
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/definitions/model.CourseOutlineWithSectionDetails"
+                                    "$ref": "#/definitions/model.CourseWithSectionDetails"
                                 }
                             }
                         }
@@ -281,13 +279,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of sections with outlines (if withOutlines=true)",
+                        "description": "List of sections without outlines",
                         "schema": {
                             "type": "array",
                             "items": {
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/definitions/model.CourseOutlineWithSectionDetails"
+                                    "$ref": "#/definitions/model.CourseWithSectionDetails"
                                 }
                             }
                         }
@@ -357,13 +355,13 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of sections with outlines (if withOutlines=true)",
+                        "description": "List of sections without outlines",
                         "schema": {
                             "type": "array",
                             "items": {
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/definitions/model.CourseOutlineWithSectionDetails"
+                                    "$ref": "#/definitions/model.CourseWithSectionDetails"
                                 }
                             }
                         }
@@ -415,46 +413,81 @@
                 }
             }
         },
+        "model.AllCourseOutlinesResponse": {
+            "description": "Paginated response containing course outlines",
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.CourseOutline"
+                    }
+                },
+                "next_url": {
+                    "type": "string",
+                    "example": "/v1/rest/outlines?limit=100\u0026offset=50"
+                },
+                "total_count": {
+                    "type": "integer",
+                    "example": 3412
+                }
+            }
+        },
         "model.CourseOffering": {
+            "description": "Course offering information for a specific term",
             "type": "object",
             "properties": {
                 "instructors": {
                     "type": "array",
                     "items": {
                         "type": "string"
-                    }
+                    },
+                    "example": [
+                        "John Doe",
+                        "Jane Smith"
+                    ]
                 },
                 "term": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Fall 2024"
                 }
             }
         },
         "model.CourseOutline": {
+            "description": "Course outline information including general details and offerings",
             "type": "object",
             "properties": {
                 "corequisites": {
-                    "type": "string"
+                    "type": "string",
+                    "example": ""
                 },
                 "degreeLevel": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "UGRD"
                 },
                 "deliveryMethod": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "In Person"
                 },
                 "dept": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "CMPT"
                 },
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Introduction to a variety of practical and important data structures and methods..."
                 },
                 "designation": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Quantitative"
                 },
                 "notes": {
-                    "type": "string"
+                    "type": "string",
+                    "example": ""
                 },
                 "number": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "225"
                 },
                 "offerings": {
                     "type": "array",
@@ -463,67 +496,30 @@
                     }
                 },
                 "prerequisites": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "(MACM 101 and (CMPT 125, CMPT 129 or CMPT 135)) or (ENSC 251 and ENSC 252), all with a minimum grade of C-."
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Data Structures and Programming"
                 },
                 "units": {
-                    "type": "string"
-                }
-            }
-        },
-        "model.CourseOutlineWithSectionDetails": {
-            "type": "object",
-            "properties": {
-                "corequisites": {
-                    "type": "string"
-                },
-                "deliveryMethod": {
-                    "type": "string"
-                },
-                "dept": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "designation": {
-                    "type": "string"
-                },
-                "number": {
-                    "type": "string"
-                },
-                "prerequisites": {
-                    "type": "string"
-                },
-                "sections": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.SectionDetail"
-                    }
-                },
-                "term": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "units": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "3"
                 }
             }
         },
         "model.CourseWithSectionDetails": {
+            "description": "Course with detailed section information",
             "type": "object",
             "properties": {
                 "dept": {
-                    "description": "CMPT",
-                    "type": "string"
+                    "type": "string",
+                    "example": "CMPT"
                 },
                 "number": {
-                    "description": "225",
-                    "type": "string"
+                    "type": "string",
+                    "example": "225"
                 },
                 "sections": {
                     "type": "array",
@@ -532,40 +528,44 @@
                     }
                 },
                 "term": {
-                    "description": "Fall 2024",
-                    "type": "string"
+                    "type": "string",
+                    "example": "Fall 2024"
                 },
                 "title": {
-                    "description": "Data Structure and Algorithms",
-                    "type": "string"
+                    "type": "string",
+                    "example": "Data Structure and Algorithms"
                 },
                 "units": {
-                    "description": "3",
-                    "type": "string"
+                    "type": "string",
+                    "example": "3"
                 }
             }
         },
         "model.Instructor": {
+            "description": "Instructor information",
             "type": "object",
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john_doe@sfu.ca"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 }
             }
         },
         "model.SectionDetail": {
+            "description": "Detailed information about a course section",
             "type": "object",
             "properties": {
                 "classNumber": {
-                    "description": "6327",
-                    "type": "string"
+                    "type": "string",
+                    "example": "6327"
                 },
                 "deliveryMethod": {
-                    "description": "In Person",
-                    "type": "string"
+                    "type": "string",
+                    "example": "In Person"
                 },
                 "instructors": {
                     "type": "array",
@@ -580,36 +580,58 @@
                     }
                 },
                 "section": {
-                    "description": "D100",
-                    "type": "string"
+                    "type": "string",
+                    "example": "D100"
                 }
             }
         },
         "model.SectionSchedule": {
+            "description": "Schedule information for a section",
             "type": "object",
             "properties": {
                 "campus": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Burnaby"
                 },
                 "days": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Mo,We,Fr"
                 },
                 "endDate": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2024-12-06"
                 },
                 "endTime": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "11:20"
                 },
                 "sectionCode": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "LEC"
                 },
                 "startDate": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2024-09-03"
                 },
                 "startTime": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "10:30"
                 }
             }
         }
-    }
+    },
+    "tags": [
+        {
+            "description": "Health endpoints for monitoring API status and availability",
+            "name": "Health"
+        },
+        {
+            "description": "Outline endpoints for retrieving course outlines, including its offerings",
+            "name": "Outlines"
+        },
+        {
+            "description": "Section endpoints for retrieving section info, including its schedules and instructor(s)",
+            "name": "Sections"
+        }
+    ]
 }

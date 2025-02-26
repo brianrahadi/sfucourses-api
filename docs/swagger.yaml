@@ -15,107 +15,118 @@ definitions:
       version:
         type: string
     type: object
+  model.AllCourseOutlinesResponse:
+    description: Paginated response containing course outlines
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.CourseOutline'
+        type: array
+      next_url:
+        example: /v1/rest/outlines?limit=100&offset=50
+        type: string
+      total_count:
+        example: 3412
+        type: integer
+    type: object
   model.CourseOffering:
+    description: Course offering information for a specific term
     properties:
       instructors:
+        example:
+        - John Doe
+        - Jane Smith
         items:
           type: string
         type: array
       term:
+        example: Fall 2024
         type: string
     type: object
   model.CourseOutline:
+    description: Course outline information including general details and offerings
     properties:
       corequisites:
+        example: ""
         type: string
       degreeLevel:
+        example: UGRD
         type: string
       deliveryMethod:
+        example: In Person
         type: string
       dept:
+        example: CMPT
         type: string
       description:
+        example: Introduction to a variety of practical and important data structures
+          and methods...
         type: string
       designation:
+        example: Quantitative
         type: string
       notes:
+        example: ""
         type: string
       number:
+        example: "225"
         type: string
       offerings:
         items:
           $ref: '#/definitions/model.CourseOffering'
         type: array
       prerequisites:
+        example: (MACM 101 and (CMPT 125, CMPT 129 or CMPT 135)) or (ENSC 251 and
+          ENSC 252), all with a minimum grade of C-.
         type: string
       title:
+        example: Data Structures and Programming
         type: string
       units:
-        type: string
-    type: object
-  model.CourseOutlineWithSectionDetails:
-    properties:
-      corequisites:
-        type: string
-      deliveryMethod:
-        type: string
-      dept:
-        type: string
-      description:
-        type: string
-      designation:
-        type: string
-      number:
-        type: string
-      prerequisites:
-        type: string
-      sections:
-        items:
-          $ref: '#/definitions/model.SectionDetail'
-        type: array
-      term:
-        type: string
-      title:
-        type: string
-      units:
+        example: "3"
         type: string
     type: object
   model.CourseWithSectionDetails:
+    description: Course with detailed section information
     properties:
       dept:
-        description: CMPT
+        example: CMPT
         type: string
       number:
-        description: "225"
+        example: "225"
         type: string
       sections:
         items:
           $ref: '#/definitions/model.SectionDetail'
         type: array
       term:
-        description: Fall 2024
+        example: Fall 2024
         type: string
       title:
-        description: Data Structure and Algorithms
+        example: Data Structure and Algorithms
         type: string
       units:
-        description: "3"
+        example: "3"
         type: string
     type: object
   model.Instructor:
+    description: Instructor information
     properties:
       email:
+        example: john_doe@sfu.ca
         type: string
       name:
+        example: John Doe
         type: string
     type: object
   model.SectionDetail:
+    description: Detailed information about a course section
     properties:
       classNumber:
-        description: "6327"
+        example: "6327"
         type: string
       deliveryMethod:
-        description: In Person
+        example: In Person
         type: string
       instructors:
         items:
@@ -126,29 +137,40 @@ definitions:
           $ref: '#/definitions/model.SectionSchedule'
         type: array
       section:
-        description: D100
+        example: D100
         type: string
     type: object
   model.SectionSchedule:
+    description: Schedule information for a section
     properties:
       campus:
+        example: Burnaby
         type: string
       days:
+        example: Mo,We,Fr
         type: string
       endDate:
+        example: "2024-12-06"
         type: string
       endTime:
+        example: "11:20"
         type: string
       sectionCode:
+        example: LEC
         type: string
       startDate:
+        example: "2024-09-03"
         type: string
       startTime:
+        example: "10:30"
         type: string
     type: object
 host: api.sfucourses.com
 info:
   contact: {}
+  description: Unofficial API for accessing SFU course outlines, sections, and instructors
+    in a seamless way. All data is pulled from SFU Course Outline REST API. This API
+    is not affiliated with Simon Fraser University.
   title: SFU Courses API
 paths:
   /health:
@@ -253,11 +275,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: List of course outlines with pagination info
+          description: Response for course outlines
           schema:
-            items:
-              $ref: '#/definitions/model.CourseOutline'
-            type: array
+            $ref: '#/definitions/model.AllCourseOutlinesResponse'
         "404":
           description: No course outlines found
           schema:
@@ -284,11 +304,11 @@ paths:
       - application/json
       responses:
         "200":
-          description: List of sections with outlines (if withOutlines=true)
+          description: List of sections without outlines
           schema:
             items:
               items:
-                $ref: '#/definitions/model.CourseOutlineWithSectionDetails'
+                $ref: '#/definitions/model.CourseWithSectionDetails'
               type: array
             type: array
         "400":
@@ -330,11 +350,11 @@ paths:
       - application/json
       responses:
         "200":
-          description: List of sections with outlines (if withOutlines=true)
+          description: List of sections without outlines
           schema:
             items:
               items:
-                $ref: '#/definitions/model.CourseOutlineWithSectionDetails'
+                $ref: '#/definitions/model.CourseWithSectionDetails'
               type: array
             type: array
         "400":
@@ -382,11 +402,11 @@ paths:
       - application/json
       responses:
         "200":
-          description: List of sections with outlines (if withOutlines=true)
+          description: List of sections without outlines
           schema:
             items:
               items:
-                $ref: '#/definitions/model.CourseOutlineWithSectionDetails'
+                $ref: '#/definitions/model.CourseWithSectionDetails'
               type: array
             type: array
         "400":
@@ -407,3 +427,11 @@ paths:
 schemes:
 - https
 swagger: "2.0"
+tags:
+- description: Health endpoints for monitoring API status and availability
+  name: Health
+- description: Outline endpoints for retrieving course outlines, including its offerings
+  name: Outlines
+- description: Section endpoints for retrieving section info, including its schedules
+    and instructor(s)
+  name: Sections

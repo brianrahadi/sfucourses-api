@@ -17,10 +17,10 @@ import (
 //	@Tags			Outlines
 //	@Accept			json
 //	@Produce		json
-//	@Param			limit	query		int						false	"Number of items to return (pagination)"
-//	@Param			offset	query		int						false	"Number of items to skip (pagination offset)"
-//	@Success		200		{object}	[]model.CourseOutline	"List of course outlines with pagination info"
-//	@Failure		404		{object}	ErrorResponse			"No course outlines found"
+//	@Param			limit	query		int								false	"Number of items to return (pagination)"
+//	@Param			offset	query		int								false	"Number of items to skip (pagination offset)"
+//	@Success		200		{object}	model.AllCourseOutlinesResponse	"Response for course outlines"
+//	@Failure		404		{object}	ErrorResponse					"No course outlines found"
 //	@Router			/v1/rest/outlines/all [get]
 func (app *application) getAllCourseOutlines(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -58,7 +58,7 @@ func (app *application) getAllCourseOutlines(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	response := model.CourseOutlinesResponse{
+	response := model.AllCourseOutlinesResponse{
 		Data:       outlines,
 		TotalCount: totalCount,
 	}
@@ -88,7 +88,7 @@ func (app *application) getAllCourseOutlines(w http.ResponseWriter, r *http.Requ
 // @Summary		Get course outlines by department
 // @Description	Retrieves all course outlines for a specific department
 //
-//	@Tags			Outlines
+// @Tags			Outlines
 //
 // @Accept			json
 // @Produce		json
@@ -121,7 +121,7 @@ func (app *application) getCourseOutlinesByDept(w http.ResponseWriter, r *http.R
 // @Summary		Get specific course outline
 // @Description	Retrieves course outline for a specific department and course number
 //
-//	@Tags			Outlines
+// @Tags			Outlines
 //
 // @Accept			json
 // @Produce		json
