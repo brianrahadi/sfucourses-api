@@ -9,6 +9,7 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/brianrahadi/sfucourses-api/internal/model"
 	. "github.com/brianrahadi/sfucourses-api/internal/model"
@@ -225,6 +226,26 @@ func toCourseWithSectionDetails(sectionDetailRawArr []SectionDetailRaw) mo.Optio
 		if schedules == nil {
 			schedules = []SectionSchedule{}
 		}
+		schedules = lo.Map(schedules, func(schedule SectionSchedule, _ int) SectionSchedule {
+			startDate, err := TransformDate(schedule.StartDate)
+			if err != nil {
+				fmt.Printf("Error transforming date: %v", err)
+			}
+			endDate, err := TransformDate(schedule.EndDate)
+			if err != nil {
+				fmt.Printf("Error transforming date: %v", err)
+			}
+			return SectionSchedule{
+				StartDate:   startDate,
+				EndDate:     endDate,
+				StartTime:   schedule.StartTime,
+				EndTime:     schedule.EndTime,
+				Days:        schedule.Days,
+				Campus:      schedule.Campus,
+				SectionCode: schedule.SectionCode,
+			}
+		})
+
 		return SectionDetail{
 			Section:        sectionDetailRaw.Info.Section,
 			DeliveryMethod: sectionDetailRaw.Info.DeliveryMethod,
@@ -268,4 +289,13 @@ func ProcessAndWriteOutlines(outlineMap map[string]model.CourseOutline, destPath
 	}
 
 	return nil
+}
+
+func TransformDate(inputDate string) (string, error) {
+	parsedTime, err := time.Parse("Mon Jan 02 15:04:05 MST 2006", inputDate)
+	if err != nil {
+		return "", err
+	}
+
+	return parsedTime.Format("2006-01-02"), nil
 }
