@@ -72,7 +72,7 @@
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 Unofficial API for accessing SFU course outlines, sections, and instructors robustly and used to power sfucourses.com. Data is pulled from SFU Course Outlines REST API. This API is not affiliated with Simon Fraser University.
 
-See api.sfucourses.com
+See [api.sfucourses.com](https://api.sfucourses.com)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Built With
@@ -97,7 +97,6 @@ To get a local copy up and running follow these simple example steps.
    ```sh
    git clone https://github.com/brianrahadi/sfucourses-api.git
    ```
-   ```
 2. Change git remote url to avoid accidental pushes to base project
    ```sh
    git remote set-url origin brianrahadi/sfucourses-api
@@ -110,7 +109,7 @@ To get a local copy up and running follow these simple example steps.
 
 ## Quick Features
 
-- REST API Server - api.sfucourses.com
+- REST API Server - [api.sfucourses.com](https://api.sfucourses.com)
 - Golang Script to fetch outlines, sessions, and sync instructors
 
 <!-- ROADMAP -->
