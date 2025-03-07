@@ -60,40 +60,40 @@ func FetchAndDecode(url string, target interface{}) error {
 	return nil
 }
 
-// getDepartments fetches all departments for a given term
-func getDepartments(year string, term string) ([]DepartmentRes, error) {
+// GetDepartments fetches all departments for a given term
+func GetDepartments(year string, term string) ([]DepartmentRes, error) {
 	url := fmt.Sprintf("%s?%s/%s", BaseURL, year, term)
 	var depts []DepartmentRes
 	err := FetchAndDecode(url, &depts)
 	return depts, err
 }
 
-// getCourses fetches all courses for a given department in a term
-func getCourses(year string, term string, dept string) ([]CourseRes, error) {
+// GetCourses fetches all courses for a given department in a term
+func GetCourses(year string, term string, dept string) ([]CourseRes, error) {
 	url := fmt.Sprintf("%s?%s/%s/%s", BaseURL, year, term, dept)
 	var courses []CourseRes
 	err := FetchAndDecode(url, &courses)
 	return courses, err
 }
 
-// getSections fetches all sections for a given course
-func getSections(year string, term string, dept string, number string) ([]SectionRes, error) {
+// GetSections fetches all sections for a given course
+func GetSections(year string, term string, dept string, number string) ([]SectionRes, error) {
 	url := fmt.Sprintf("%s?%s/%s/%s/%s", BaseURL, year, term, dept, number)
 	var sections []SectionRes
 	err := FetchAndDecode(url, &sections)
 	return sections, err
 }
 
-// getCourseOutline fetches the course outline for a given section
-func getCourseOutline(year string, term string, dept string, number string, section string) (OutlineRes, error) {
+// GetCourseOutline fetches the course outline for a given section
+func GetCourseOutline(year string, term string, dept string, number string, section string) (OutlineRes, error) {
 	url := fmt.Sprintf("%s?%s/%s/%s/%s/%s", BaseURL, year, term, dept, number, section)
 	var outline OutlineRes
 	err := FetchAndDecode(url, &outline)
 	return outline, err
 }
 
-// getCourseWithSections fetches the course outline for a given section
-func getSectionDetailRaw(year string, term string, dept string, number string, section string) (SectionDetailRaw, error) {
+// GetSectionDetailRaw fetches the course outline for a given section
+func GetSectionDetailRaw(year string, term string, dept string, number string, section string) (SectionDetailRaw, error) {
 	url := fmt.Sprintf("%s?%s/%s/%s/%s/%s", BaseURL, year, term, dept, number, section)
 	var sectionDetailRaw SectionDetailRaw
 	err := FetchAndDecode(url, &sectionDetailRaw)
@@ -102,7 +102,7 @@ func getSectionDetailRaw(year string, term string, dept string, number string, s
 
 // ProcessTerm handles all the fetching for a single term
 func ProcessTerm(year string, term string, courseMap mo.Either[map[string]model.CourseOutline, map[string]model.CourseWithSectionDetails]) error {
-	depts, err := getDepartments(year, term)
+	depts, err := GetDepartments(year, term)
 	if err != nil {
 		return fmt.Errorf("error getting departments for term %s: %w", term, err)
 	}
@@ -119,7 +119,7 @@ func ProcessTerm(year string, term string, courseMap mo.Either[map[string]model.
 
 // processDepartment handles all the fetching for a single department
 func processDepartment(year string, term string, dept string, courseMap mo.Either[map[string]model.CourseOutline, map[string]CourseWithSectionDetails]) error {
-	courses, err := getCourses(year, term, dept)
+	courses, err := GetCourses(year, term, dept)
 	if err != nil {
 		return fmt.Errorf("error getting courses for department %s: %w", dept, err)
 	}
@@ -154,7 +154,7 @@ func processDepartment(year string, term string, dept string, courseMap mo.Eithe
 
 // processCourseOutline handles all the fetching for a single course
 func processCourseOutline(year string, term string, dept string, number string, outlineMap map[string]model.CourseOutline) error {
-	sections, err := getSections(year, term, dept, number)
+	sections, err := GetSections(year, term, dept, number)
 	if err != nil {
 		return fmt.Errorf("error getting sections for course %s: %w", number, err)
 	}
@@ -164,7 +164,7 @@ func processCourseOutline(year string, term string, dept string, number string, 
 		return nil
 	}
 
-	outline, err := getCourseOutline(year, term, dept, number, sections[0].Value)
+	outline, err := GetCourseOutline(year, term, dept, number, sections[0].Value)
 	if err != nil {
 		return fmt.Errorf("error getting outline for section %s: %w", sections[0].Value, err)
 	}
@@ -178,7 +178,7 @@ func processCourseOutline(year string, term string, dept string, number string, 
 }
 
 func processSectionDetails(year string, term string, dept string, number string, courseWithSectionDetailsMap map[string]model.CourseWithSectionDetails) error {
-	sections, err := getSections(year, term, dept, number)
+	sections, err := GetSections(year, term, dept, number)
 	if err != nil {
 		return fmt.Errorf("error getting sections for course %s: %w", number, err)
 	}
@@ -186,14 +186,14 @@ func processSectionDetails(year string, term string, dept string, number string,
 	sectionDetailRawArr := make([]SectionDetailRaw, 0, len(sections))
 
 	for _, section := range sections {
-		sectionDetailRaw, err := getSectionDetailRaw(year, term, dept, number, section.Value)
+		sectionDetailRaw, err := GetSectionDetailRaw(year, term, dept, number, section.Value)
 		if err != nil {
 			fmt.Printf("error getting outline for section %s: %v", sections[0].Value, err)
 			continue
 		}
 		sectionDetailRawArr = append(sectionDetailRawArr, sectionDetailRaw)
 	}
-	maybeCourseWithSectionDetails := toCourseWithSectionDetails(sectionDetailRawArr)
+	maybeCourseWithSectionDetails := ToCourseWithSectionDetails(sectionDetailRawArr)
 	if maybeCourseWithSectionDetails.IsAbsent() {
 		fmt.Printf("Error converting course with section details - %s %s %s %s", year, term, dept, number)
 		return nil
@@ -205,7 +205,8 @@ func processSectionDetails(year string, term string, dept string, number string,
 	return nil
 }
 
-func toCourseWithSectionDetails(sectionDetailRawArr []SectionDetailRaw) mo.Option[CourseWithSectionDetails] {
+// ToCourseWithSectionDetails converts an array of SectionDetailRaw to CourseWithSectionDetails
+func ToCourseWithSectionDetails(sectionDetailRawArr []SectionDetailRaw) mo.Option[CourseWithSectionDetails] {
 	if len(sectionDetailRawArr) == 0 {
 		return mo.None[CourseWithSectionDetails]()
 	}
