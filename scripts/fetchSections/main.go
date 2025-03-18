@@ -172,33 +172,36 @@ func processDepartment(ctx context.Context, year, term, dept string, courseMap m
 	var wg sync.WaitGroup
 
 	// Process sections only for CourseWithSectionDetails
-	if courseMap.IsRight() {
-		sectionDetailsMap := courseMap.RightOrEmpty()
+	if courseMap.IsLeft() {
+		fmt.Printf("CourseMap is not CourseWithSectionDetails\n")
+		return nil
+	}
 
-		// Process each course concurrently
-		for _, course := range courses {
-			// Skip courses with empty Title
-			if course.Title == "" {
-				fmt.Printf("Skipping course with empty title in department %s\n", dept)
-				continue
-			}
+	sectionDetailsMap := courseMap.RightOrEmpty()
 
-			wg.Add(1)
-			courseSemaphore <- struct{}{} // Acquire semaphore
-
-			go func(courseObj utils.CourseRes) {
-				defer wg.Done()
-				defer func() { <-courseSemaphore }() // Release semaphore
-
-				courseCtx, courseCancel := context.WithTimeout(ctx, 2*time.Minute)
-				defer courseCancel()
-
-				err := processSectionDetails(courseCtx, year, term, dept, courseObj.Value, sectionDetailsMap, mu)
-				if err != nil {
-					fmt.Printf("Error processing course %s %s: %v\n", dept, courseObj.Value, err)
-				}
-			}(course)
+	// Process each course concurrently
+	for _, course := range courses {
+		// Skip courses with empty Title
+		if course.Title == "" {
+			fmt.Printf("Skipping course with empty title in department %s\n", dept)
+			continue
 		}
+
+		wg.Add(1)
+		courseSemaphore <- struct{}{} // Acquire semaphore
+
+		go func(courseObj utils.CourseRes) {
+			defer wg.Done()
+			defer func() { <-courseSemaphore }() // Release semaphore
+
+			courseCtx, courseCancel := context.WithTimeout(ctx, 2*time.Minute)
+			defer courseCancel()
+
+			err := processSectionDetails(courseCtx, year, term, dept, courseObj.Value, sectionDetailsMap, mu)
+			if err != nil {
+				fmt.Printf("Error processing course %s %s: %v\n", dept, courseObj.Value, err)
+			}
+		}(course)
 	}
 
 	// Wait for all courses to be processed
