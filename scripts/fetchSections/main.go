@@ -1,4 +1,4 @@
-// This file should be saved as scripts/fetchSections/fast/main.go
+// This file should be saved as scripts/fetchSections/main.go
 package main
 
 import (
@@ -63,7 +63,15 @@ func main() {
 		return courseWithSectionDetails.Dept != "" && courseWithSectionDetails.Number != ""
 	})
 
-	// Sort by department and number
+	// Sort each course's sections by section code
+	for i := range courseWithSectionDetails {
+		// Sort the section details by section code
+		slices.SortFunc(courseWithSectionDetails[i].SectionDetails, func(a model.SectionDetail, b model.SectionDetail) int {
+			return strings.Compare(a.Section, b.Section)
+		})
+	}
+
+	// Sort courses by department and number
 	slices.SortFunc(courseWithSectionDetails, func(a model.CourseWithSectionDetails, b model.CourseWithSectionDetails) int {
 		if a.Dept != b.Dept {
 			return strings.Compare(a.Dept, b.Dept)
@@ -278,10 +286,18 @@ func processSectionDetails(ctx context.Context, year, term, dept, number string,
 		return nil
 	}
 
+	// Get the course with section details
+	courseWithSectionDetails := maybeCourseWithSectionDetails.MustGet()
+
+	// Sort the section details by section code before adding to the map
+	slices.SortFunc(courseWithSectionDetails.SectionDetails, func(a model.SectionDetail, b model.SectionDetail) int {
+		return strings.Compare(a.Section, b.Section)
+	})
+
 	// Add the course with section details to the map (thread-safe)
 	courseKey := fmt.Sprintf("%s %s", dept, number)
 	mu.Lock()
-	courseWithSectionDetailsMap[courseKey] = maybeCourseWithSectionDetails.MustGet()
+	courseWithSectionDetailsMap[courseKey] = courseWithSectionDetails
 	mu.Unlock()
 
 	fmt.Printf("Processed section details for %s %s %s %s (%d sections)\n", dept, number, term, year, len(sections))
