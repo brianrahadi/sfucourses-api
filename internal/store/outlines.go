@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -17,16 +18,17 @@ import (
 var outlinesJSON []byte
 
 type OutlineStore struct {
+	db             *sql.DB
 	cachedOutlines []CourseOutline
 }
 
-func NewOutlineStore() (*OutlineStore, error) {
+func NewOutlineStore(db *sql.DB) (*OutlineStore, error) {
 	var outlines []CourseOutline
 	if err := json.Unmarshal(outlinesJSON, &outlines); err != nil {
 		return nil, fmt.Errorf("error parsing JSON: %v", err)
 	}
 
-	return &OutlineStore{cachedOutlines: outlines}, nil
+	return &OutlineStore{db: db, cachedOutlines: outlines}, nil
 }
 
 func (s *OutlineStore) GetAll(ctx context.Context, limitOpt mo.Option[int], offsetOpt mo.Option[int]) ([]CourseOutline, int, error) {

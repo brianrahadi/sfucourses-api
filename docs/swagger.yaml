@@ -94,6 +94,9 @@ definitions:
       dept:
         example: CMPT
         type: string
+      id:
+        example: "1234"
+        type: string
       number:
         example: "225"
         type: string

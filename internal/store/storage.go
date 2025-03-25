@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"log"
 
@@ -33,22 +34,22 @@ type Storage struct {
 	}
 }
 
-func NewStorage() Storage {
-	outlines, err := NewOutlineStore()
+func NewStorage(db *sql.DB) Storage {
+	outlines, err := NewOutlineStore(db)
 	if err != nil {
 		log.Fatal("Error loading outlines store")
-		outlines = &OutlineStore{}
+		outlines = &OutlineStore{db: db}
 	}
-	sections, err := NewSectionStore()
+	sections, err := NewSectionStore(db)
 	if err != nil {
 		log.Fatal("Error loading sections store")
-		sections = &SectionsStore{}
+		sections = &SectionsStore{db: db}
 	}
 
-	sectionsWithOutline, err := NewSectionsWithOutlineStore()
+	sectionsWithOutline, err := NewSectionsWithOutlineStore(db)
 	if err != nil {
 		log.Fatal("Error loading sections store")
-		sectionsWithOutline = &SectionsWithOutlineStore{}
+		sectionsWithOutline = &SectionsWithOutlineStore{db: db}
 	}
 	return Storage{
 		Outlines:             outlines,

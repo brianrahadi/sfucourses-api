@@ -20,6 +20,7 @@ type CourseOutline struct {
 // CourseWithSectionDetails represents a course with its section details
 // @Description Course with detailed section information
 type CourseWithSectionDetails struct {
+	ID             string          `json:"id" example:"1234" description:"Course ID for database"`
 	Dept           string          `json:"dept" example:"CMPT" description:"Department code"`
 	Number         string          `json:"number" example:"225" description:"Course number"`
 	Title          string          `json:"title" example:"Data Structure and Algorithms" description:"Course title"`

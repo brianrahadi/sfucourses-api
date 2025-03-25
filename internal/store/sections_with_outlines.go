@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -16,10 +17,11 @@ import (
 var outlinesJSON2 []byte
 
 type SectionsWithOutlineStore struct {
+	db                         *sql.DB
 	cachedSectionsWithOutlines map[string][]CourseOutlineWithSectionDetails
 }
 
-func NewSectionsWithOutlineStore() (*SectionsWithOutlineStore, error) {
+func NewSectionsWithOutlineStore(db *sql.DB) (*SectionsWithOutlineStore, error) {
 	// Initialize a map of raw JSON data for each schedule
 	scheduleMap := map[string][]byte{
 		"2025-spring": spring2025Courses,
@@ -42,6 +44,7 @@ func NewSectionsWithOutlineStore() (*SectionsWithOutlineStore, error) {
 
 	// Initialize the CoursesStore
 	store := &SectionsWithOutlineStore{
+		db:                         db,
 		cachedSectionsWithOutlines: make(map[string][]CourseOutlineWithSectionDetails),
 	}
 

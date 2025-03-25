@@ -24,6 +24,7 @@ type config struct {
 	addr   string
 	env    string
 	apiURL string
+	db     dbConfig
 }
 
 // dbConfig holds the database configuration

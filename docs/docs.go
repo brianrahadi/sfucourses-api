@@ -524,6 +524,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "CMPT"
                 },
+                "id": {
+                    "type": "string",
+                    "example": "1234"
+                },
                 "number": {
                     "type": "string",
                     "example": "225"

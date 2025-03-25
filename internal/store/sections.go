@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -28,10 +29,11 @@ var summer2024Courses []byte
 var spring2024Courses []byte
 
 type SectionsStore struct {
+	db             *sql.DB
 	cachedSections map[string][]CourseWithSectionDetails
 }
 
-func NewSectionStore() (*SectionsStore, error) {
+func NewSectionStore(db *sql.DB) (*SectionsStore, error) {
 	// Initialize a map of raw JSON data for each schedule
 	scheduleMap := map[string][]byte{
 		"2025-summer": summer2025Courses,
@@ -43,6 +45,7 @@ func NewSectionStore() (*SectionsStore, error) {
 
 	// Initialize the CoursesStore
 	store := &SectionsStore{
+		db:             db,
 		cachedSections: make(map[string][]CourseWithSectionDetails),
 	}
 
@@ -56,6 +59,38 @@ func NewSectionStore() (*SectionsStore, error) {
 	}
 
 	return store, nil
+}
+
+func (s *SectionsStore) Add(ctx context.Context, courseWithSections *CourseWithSectionDetails) error {
+	// key := fmt.Sprintf("%s-%s", course.Year, strings.ToLower(course.Term))
+	// courses, found := s.cachedSections[key]
+	// if !found {
+	// 	courses = []CourseWithSectionDetails{}
+	// }
+	// courses = append(courses, course)
+	// s.cachedSections[key] = courses
+	// return nil
+	query := `
+		INSERT INTO sections (dept, number, title, term)
+		VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at, updated_at
+	`
+
+	err := s.db.QueryRowContext(
+		ctx,
+		query,
+		courseWithSections.Dept,
+		courseWithSections.Number,
+		courseWithSections.Title,
+		courseWithSections.Term,
+	).Scan(
+		&courseWithSections.ID,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *SectionsStore) GetByTerm(ctx context.Context, year string, term string) ([]CourseWithSectionDetails, error) {
