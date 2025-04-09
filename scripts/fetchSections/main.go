@@ -39,7 +39,7 @@ func main() {
 	fmt.Printf("Fetching sections for %s %s...\n", term, year)
 	startTime := time.Now()
 
-	resultFilePath := fmt.Sprintf("./internal/store/json/sections/%s-%s.json", year, term)
+	resultFilePath := fmt.Sprintf("../.././internal/store/json/sections/%s-%s.json", year, term)
 
 	// Create a context with timeout for the entire operation
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
