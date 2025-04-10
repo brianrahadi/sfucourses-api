@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -157,19 +156,13 @@ func (app *application) middleware(next http.Handler) http.Handler {
 func (app *application) startCronJobs() {
 	s := gocron.NewScheduler(time.UTC)
 
-	// Add a job that runs every day at midnight UTC
-	_, err := s.Every(1).Minutes().Do(func() {
+	_, err := s.Every(1).Minutes().At("00:00").Do(func() {
 		log.Printf("Starting scheduled fetch sections at %v", time.Now().UTC())
 
-		// Get current year and term
 		year, term := getNextTerm()
 
-		projectRoot, err := filepath.Abs("../../")
-		if err != nil {
-			log.Printf("Error getting project root: %v", err)
-			return
-		}
-		cmd := exec.Command("go", "run", filepath.Join(projectRoot, "scripts/fetchSections/main.go"), year, term)
+		// Use the compiled executable instead of go run
+		cmd := exec.Command("./bin/fetch-sections", year, term)
 
 		// Capture both stdout and stderr
 		output, err := cmd.CombinedOutput()
@@ -186,7 +179,6 @@ func (app *application) startCronJobs() {
 		return
 	}
 
-	// Start the scheduler in a separate goroutine
 	s.StartAsync()
 }
 
