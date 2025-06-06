@@ -11,9 +11,8 @@ sync-offerings:
 	go run scripts/syncOfferings/main.go
 
 .PHONY: sync-instructors
-sync-offerings:
+sync-instructors:
 	go run scripts/syncInstructors/main.go
-
 
 .PHONY: gen-docs
 gen-docs:
