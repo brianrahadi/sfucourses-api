@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var BuildTime string // will be set via ldflags
+var BuildTime string = time.Now().Format(time.RFC3339)
 
 // type Commit struct {
 // 	Commit struct {
