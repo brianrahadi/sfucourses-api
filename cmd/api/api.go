@@ -161,8 +161,8 @@ func (app *application) startCronJobs() {
 
 		year, term := getNextTerm()
 
-		// Use the compiled executable instead of go run
-		cmd := exec.Command("./bin/fetch-sections", year, term)
+		// Use the correct path in the Docker container
+		cmd := exec.Command("./fetch-sections", year, term)
 
 		// Capture both stdout and stderr
 		output, err := cmd.CombinedOutput()
