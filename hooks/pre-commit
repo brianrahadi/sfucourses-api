@@ -1,0 +1,12 @@
+#!/bin/bash
+
+./scripts/pre-commit.sh
+
+if [ $? -ne 0 ]; then
+    echo "Pre-commit hook failed. Commit aborted."
+    exit 1
+fi
+
+mkdir -p hooks
+
+cp .git/hooks/pre-commit hooks/pre-commit 
