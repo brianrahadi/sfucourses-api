@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/MarceloPetrucio/go-scalar-api-reference"
@@ -20,6 +21,9 @@ import (
 type application struct {
 	config config
 	store  store.Storage
+
+	lastDataUpdate     time.Time
+	lastDataUpdateLock sync.RWMutex
 }
 
 // config holds the application configuration
@@ -156,7 +160,7 @@ func (app *application) middleware(next http.Handler) http.Handler {
 func (app *application) startCronJobs() {
 	s := gocron.NewScheduler(time.UTC)
 
-	_, err := s.Every(1).Hours().At("00:00").Do(func() {
+	_, err := s.Every(1).Minutes().At("00:00").Do(func() {
 		log.Printf("Starting scheduled data sync at %v", time.Now().UTC())
 
 		year, term := getCurrentTerm()
@@ -189,7 +193,12 @@ func (app *application) startCronJobs() {
 			log.Printf("Successfully completed %s\nOutput: %s", cmdInfo.name, output)
 		}
 
-		log.Printf("Completed all scheduled data sync at %v", time.Now().UTC())
+		// If all commands succeed, update the lastDataUpdate time
+		app.lastDataUpdateLock.Lock()
+		app.lastDataUpdate = time.Now().UTC()
+		app.lastDataUpdateLock.Unlock()
+
+		log.Printf("Completed all scheduled data sync at %v", app.lastDataUpdate)
 	})
 
 	if err != nil {
@@ -266,8 +275,9 @@ func (app *application) run(mux http.Handler) error {
 //
 //	@Description	Health check status information
 type HealthResponse struct {
-	Status  string `json:"status" example:"ok"`
-	Version string `json:"version,omitempty" example:"1.0.0"`
+	Status         string `json:"status" example:"ok"`
+	Version        string `json:"version,omitempty" example:"1.0.0"`
+	LastDataUpdate string `json:"lastDataUpdate,omitempty"`
 }
 
 // OutlineResponse represents a course outline response
