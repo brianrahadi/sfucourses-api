@@ -14,7 +14,7 @@ const (
 
 func main() {
 	terms := [][]string{
-		{"2025", "summer"}, {"2025", "spring"}, {"2024", "fall"}, {"2024", "summer"},
+		{"2025", "fall"}, {"2025", "summer"}, {"2025", "spring"}, {"2024", "fall"}, {"2024", "summer"},
 		{"2024", "spring"},
 	}
 	var outlineMapContainer = mo.Left[map[string]model.CourseOutline, map[string]model.CourseWithSectionDetails](make(map[string]model.CourseOutline))
