@@ -6,11 +6,14 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/MarceloPetrucio/go-scalar-api-reference"
 	"github.com/brianrahadi/sfucourses-api/internal/store"
+	"github.com/go-co-op/gocron"
 )
 
 // application represents the application structure with configuration and data store
@@ -149,15 +152,85 @@ func (app *application) middleware(next http.Handler) http.Handler {
 	}), 60*time.Second, "Request timed out")
 }
 
+// startCronJobs initializes and starts all cron jobs
+func (app *application) startCronJobs() {
+	s := gocron.NewScheduler(time.UTC)
+
+	_, err := s.Every(1).Minutes().At("00:00").Do(func() {
+		log.Printf("Starting scheduled fetch sections at %v", time.Now().UTC())
+
+		year, term := getNextTerm()
+
+		// Use the compiled executable instead of go run
+		cmd := exec.Command("./bin/fetch-sections", year, term)
+
+		// Capture both stdout and stderr
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			log.Printf("Error running fetch sections: %v\nOutput: %s", err, output)
+			return
+		}
+
+		log.Printf("Successfully completed fetch sections at %v\nOutput: %s", time.Now().UTC(), output)
+	})
+
+	if err != nil {
+		log.Printf("Error scheduling cron job: %v", err)
+		return
+	}
+
+	s.StartAsync()
+}
+
+// getCurrentTerm returns the current academic year and term
+func getCurrentTerm() (string, string) {
+	return getTermForDate(time.Now())
+}
+
+// getTermForDate determines the academic term for a given date
+func getTermForDate(date time.Time) (string, string) {
+	year := fmt.Sprintf("%d", date.Year())
+
+	// Determine the term based on the month
+	var term string
+	switch {
+	case date.Month() >= time.January && date.Month() <= time.April:
+		term = "spring"
+	case date.Month() >= time.May && date.Month() <= time.August:
+		term = "summer"
+	case date.Month() >= time.September && date.Month() <= time.December:
+		term = "fall"
+	}
+
+	return year, term
+}
+
+// getNextTerm returns the next academic term
+func getNextTerm() (string, string) {
+	now := time.Now()
+	year, currentTerm := getTermForDate(now)
+	currentYear, _ := strconv.Atoi(year)
+
+	var nextDate time.Time
+	switch currentTerm {
+	case "spring":
+		nextDate = time.Date(currentYear, time.May, 1, 0, 0, 0, 0, time.UTC)
+	case "summer":
+		nextDate = time.Date(currentYear, time.September, 1, 0, 0, 0, 0, time.UTC)
+	case "fall":
+		nextDate = time.Date(currentYear+1, time.January, 1, 0, 0, 0, 0, time.UTC)
+	}
+
+	return getTermForDate(nextDate)
+}
+
 // run starts the HTTP server
 //
 //	@Description	Start the HTTP server with the provided handler and configuration
 func (app *application) run(mux http.Handler) error {
+	// Start cron jobs
+	app.startCronJobs()
 
-	// // Docs
-	// docs.SwaggerInfo.Version = version
-	// docs.SwaggerInfo.Host = "api.sfucourses.com"
-	// // docs.SwaggerInfo.BasePath = "/v1/rest"
 	srv := &http.Server{
 		Addr:         app.config.addr,
 		Handler:      app.middleware(mux),
