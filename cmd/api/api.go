@@ -160,7 +160,7 @@ func (app *application) middleware(next http.Handler) http.Handler {
 func (app *application) startCronJobs() {
 	s := gocron.NewScheduler(time.UTC)
 
-	_, err := s.Every(1).Minutes().At("00:00").Do(func() {
+	_, err := s.Every(1).Hours().At("00:00").Do(func() {
 		log.Printf("Starting scheduled data sync at %v", time.Now().UTC())
 
 		year, term := getCurrentTerm()
