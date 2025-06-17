@@ -277,7 +277,7 @@ func (app *application) run(mux http.Handler) error {
 type HealthResponse struct {
 	Status         string `json:"status" example:"ok"`
 	Version        string `json:"version,omitempty" example:"1.0.0"`
-	LastDataUpdate string `json:"lastDataUpdate,omitempty"`
+	LastDataUpdate string `json:"lastDataUpdate,omitempty" example:"2025-06-17T07:40:46Z"`
 }
 
 // OutlineResponse represents a course outline response

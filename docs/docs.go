@@ -410,6 +410,10 @@ const docTemplate = `{
             "description": "Health check status information",
             "type": "object",
             "properties": {
+                "lastDataUpdate": {
+                    "type": "string",
+                    "example": "2025-06-17T07:40:46Z"
+                },
                 "status": {
                     "type": "string",
                     "example": "ok"

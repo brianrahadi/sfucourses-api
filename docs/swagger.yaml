@@ -10,6 +10,9 @@ definitions:
   main.HealthResponse:
     description: Health check status information
     properties:
+      lastDataUpdate:
+        example: "2025-06-17T07:40:46Z"
+        type: string
       status:
         example: ok
         type: string

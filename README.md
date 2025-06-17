@@ -133,6 +133,20 @@ Very recommended! very appreciated!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+
+### Git Hooks
+To set up the pre-commit hooks:
+```bash
+cp hooks/pre-commit .git/hooks/
+chmod +x .git/hooks/pre-commit
+```
+```
+
+This way:
+- The hook templates are version controlled
+- Each developer can set up their own hooks
+- The actual `.git/hooks` directory remains local to each developer's machine
+
 <!-- LICENSE -->
 
 ## License
