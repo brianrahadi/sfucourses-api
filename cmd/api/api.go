@@ -156,22 +156,40 @@ func (app *application) middleware(next http.Handler) http.Handler {
 func (app *application) startCronJobs() {
 	s := gocron.NewScheduler(time.UTC)
 
-	_, err := s.Every(1).Minutes().At("00:00").Do(func() {
-		log.Printf("Starting scheduled fetch sections at %v", time.Now().UTC())
+	_, err := s.Every(1).Hours().At("00:00").Do(func() {
+		log.Printf("Starting scheduled data sync at %v", time.Now().UTC())
 
-		year, term := getNextTerm()
+		year, term := getCurrentTerm()
 
-		// Use the correct path in the Docker container
-		cmd := exec.Command("./fetch-sections", year, term)
+		nextTermYear, nextTermTerm := getNextTerm()
 
-		// Capture both stdout and stderr
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			log.Printf("Error running fetch sections: %v\nOutput: %s", err, output)
-			return
+		// Run all commands in sequence
+		commands := []struct {
+			name string
+			args []string
+		}{
+			{"fetch-sections", []string{year, term}},
+			{"fetch-sections", []string{nextTermYear, nextTermTerm}},
+			{"sync-offerings", []string{}},
+			{"sync-instructors", []string{}},
 		}
 
-		log.Printf("Successfully completed fetch sections at %v\nOutput: %s", time.Now().UTC(), output)
+		for _, cmdInfo := range commands {
+			log.Printf("Running %s...", cmdInfo.name)
+
+			cmd := exec.Command(fmt.Sprintf("./bin/%s", cmdInfo.name), cmdInfo.args...)
+
+			// Capture both stdout and stderr
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				log.Printf("Error running %s: %v\nOutput: %s", cmdInfo.name, err, output)
+				continue // Continue with next command even if one fails
+			}
+
+			log.Printf("Successfully completed %s\nOutput: %s", cmdInfo.name, output)
+		}
+
+		log.Printf("Completed all scheduled data sync at %v", time.Now().UTC())
 	})
 
 	if err != nil {
