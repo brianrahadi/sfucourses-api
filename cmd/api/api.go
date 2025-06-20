@@ -2,10 +2,12 @@ package main
 
 import (
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -99,6 +101,7 @@ func (app *application) mount() http.Handler {
 	})
 
 	mux.HandleFunc("GET /health", app.healthCheckHandler)
+	mux.HandleFunc("POST /update", app.manualUpdateHandler)
 
 	mux.HandleFunc("GET /v1/rest/outlines/all", app.getAllCourseOutlines)
 	mux.HandleFunc("GET /v1/rest/outlines/{dept}", app.getCourseOutlinesByDept)
@@ -156,49 +159,101 @@ func (app *application) middleware(next http.Handler) http.Handler {
 	}), 60*time.Second, "Request timed out")
 }
 
+// runDataSync executes all data sync commands
+func (app *application) runDataSync() (int, int) {
+	log.Printf("Starting data sync at %v", time.Now().UTC())
+
+	year, term := getCurrentTerm()
+	nextTermYear, nextTermTerm := getNextTerm()
+
+	// Run all commands in sequence
+	commands := []struct {
+		name string
+		args []string
+	}{
+		{"fetch-sections", []string{year, term}},
+		{"fetch-sections", []string{nextTermYear, nextTermTerm}},
+		{"sync-offerings", []string{}},
+		{"sync-instructors", []string{}},
+	}
+
+	successCount := 0
+	totalCommands := len(commands)
+
+	for _, cmdInfo := range commands {
+		log.Printf("Running %s...", cmdInfo.name)
+
+		cmd := exec.Command(fmt.Sprintf("./bin/%s", cmdInfo.name), cmdInfo.args...)
+
+		// Capture both stdout and stderr
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			log.Printf("Error running %s: %v\nOutput: %s", cmdInfo.name, err, output)
+			continue // Continue with next command even if one fails
+		}
+
+		log.Printf("Successfully completed %s\nOutput: %s", cmdInfo.name, output)
+		successCount++
+	}
+
+	// Update the lastDataUpdate time
+	app.lastDataUpdateLock.Lock()
+	app.lastDataUpdate = time.Now().UTC()
+	app.lastDataUpdateLock.Unlock()
+
+	log.Printf("Completed data sync at %v", app.lastDataUpdate)
+	return successCount, totalCommands
+}
+
+// manualUpdateHandler triggers a manual data update
+func (app *application) manualUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	// Check if request method is POST
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Read the request body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Failed to read request body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	// Check password from environment variable
+	expectedPassword := os.Getenv("UPDATE_PASSWORD")
+	if expectedPassword == "" {
+		http.Error(w, "Update password not configured", http.StatusInternalServerError)
+		return
+	}
+
+	if string(body) != expectedPassword {
+		print(string(body), expectedPassword)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	successCount, totalCommands := app.runDataSync()
+
+	// Return response
+	response := map[string]interface{}{
+		"status":        "completed",
+		"successCount":  successCount,
+		"totalCommands": totalCommands,
+		"lastUpdate":    app.lastDataUpdate.Format(time.RFC3339),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
 // startCronJobs initializes and starts all cron jobs
 func (app *application) startCronJobs() {
 	s := gocron.NewScheduler(time.UTC)
 
-	_, err := s.Every(1).Hours().At("00:00").Do(func() {
-		log.Printf("Starting scheduled data sync at %v", time.Now().UTC())
-
-		year, term := getCurrentTerm()
-
-		nextTermYear, nextTermTerm := getNextTerm()
-
-		// Run all commands in sequence
-		commands := []struct {
-			name string
-			args []string
-		}{
-			{"fetch-sections", []string{year, term}},
-			{"fetch-sections", []string{nextTermYear, nextTermTerm}},
-			{"sync-offerings", []string{}},
-			{"sync-instructors", []string{}},
-		}
-
-		for _, cmdInfo := range commands {
-			log.Printf("Running %s...", cmdInfo.name)
-
-			cmd := exec.Command(fmt.Sprintf("./bin/%s", cmdInfo.name), cmdInfo.args...)
-
-			// Capture both stdout and stderr
-			output, err := cmd.CombinedOutput()
-			if err != nil {
-				log.Printf("Error running %s: %v\nOutput: %s", cmdInfo.name, err, output)
-				continue // Continue with next command even if one fails
-			}
-
-			log.Printf("Successfully completed %s\nOutput: %s", cmdInfo.name, output)
-		}
-
-		// If all commands succeed, update the lastDataUpdate time
-		app.lastDataUpdateLock.Lock()
-		app.lastDataUpdate = time.Now().UTC()
-		app.lastDataUpdateLock.Unlock()
-
-		log.Printf("Completed all scheduled data sync at %v", app.lastDataUpdate)
+	_, err := s.Every(1).Day().At("00:00").Do(func() {
+		app.runDataSync()
 	})
 
 	if err != nil {

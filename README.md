@@ -112,6 +112,49 @@ To get a local copy up and running follow these simple example steps.
 - REST API Server - [api.sfucourses.com](https://api.sfucourses.com)
 - Golang Script to fetch outlines, sessions, and sync instructors
 
+## Docker
+
+### Build the Image
+```bash
+docker build -t sfu-courses-api .
+```
+
+### Run the Container
+```bash
+# Create .env file
+echo "UPDATE_PASSWORD=your-secure-password-here" > .env
+
+# Run with .env file
+docker run -p 8080:8080 --env-file .env sfu-courses-api
+```
+
+### Test the Update Endpoint
+```bash
+curl -X POST http://localhost:8080/update \
+  -H "Content-Type: text/plain" \
+  -d "your-secure-password-here"
+```
+
+### Useful Docker Commands
+```bash
+# View running containers
+docker ps
+
+# View logs
+docker logs <container_id>
+
+# View logs live
+docker logs -f <container_id>
+
+# Stop container
+docker stop <container_id>
+
+# Remove container
+docker rm <container_id>
+```
+
+The API will be available at `http://localhost:8080` once the container is running.
+
 <!-- ROADMAP -->
 
 ## Roadmap
@@ -133,6 +176,26 @@ Very recommended! very appreciated!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### Docker Commands
+
+```
+
+
+### UPDATE_PASSWORD
+Required for the `/update` endpoint. Set this environment variable to secure manual data updates.
+
+```bash
+export UPDATE_PASSWORD="your-secure-password-here"
+```
+
+**Usage:**
+```bash
+curl -X POST http://localhost:8080/update \
+  -H "Content-Type: text/plain" \
+  -d "your-secure-password-here"
+```
+
+**Security Note:** Never commit the actual password to version control. Use environment variables or secrets management in production.
 
 ### Git Hooks
 To set up the pre-commit hooks:
