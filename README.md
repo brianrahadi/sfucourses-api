@@ -203,7 +203,7 @@ To set up the pre-commit hooks:
 cp hooks/pre-commit .git/hooks/
 chmod +x .git/hooks/pre-commit
 ```
-```
+
 
 This way:
 - The hook templates are version controlled
