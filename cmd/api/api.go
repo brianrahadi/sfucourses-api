@@ -252,7 +252,7 @@ func (app *application) manualUpdateHandler(w http.ResponseWriter, r *http.Reque
 func (app *application) startCronJobs() {
 	s := gocron.NewScheduler(time.UTC)
 
-	_, err := s.Every(1).Day().At("00:00").Do(func() {
+	_, err := s.Every(1).Hours().At("00:00").Do(func() {
 		app.runDataSync()
 	})
 
