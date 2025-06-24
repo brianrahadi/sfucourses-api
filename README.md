@@ -91,6 +91,11 @@ To get a local copy up and running follow these simple example steps.
 
 - Golang v1.23.3
 
+### Quick Features
+
+- REST API Server - [api.sfucourses.com](https://api.sfucourses.com)
+- Golang Script to fetch outlines, sessions, and sync instructors
+
 ### Installation
 
 1. Clone the repo
@@ -105,12 +110,14 @@ To get a local copy up and running follow these simple example steps.
 
 3. Run the project through air.toml or docker
 
+air is good for development with it's real-time file update sync
+```
+air
+```
+
+Docker is good for its 1-to-1 behaviour with production. You can either use docker build and run or docker compose.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## Quick Features
-
-- REST API Server - [api.sfucourses.com](https://api.sfucourses.com)
-- Golang Script to fetch outlines, sessions, and sync instructors
 
 ## Docker
 
@@ -193,7 +200,7 @@ To set up the pre-commit hooks:
 cp hooks/pre-commit .git/hooks/
 chmod +x .git/hooks/pre-commit
 ```
-```
+
 
 This way:
 - The hook templates are version controlled
