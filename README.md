@@ -121,18 +121,8 @@ docker build -t sfu-courses-api .
 
 ### Run the Container
 ```bash
-# Create .env file
-echo "UPDATE_PASSWORD=your-secure-password-here" > .env
-
 # Run with .env file
-docker run -p 8080:8080 --env-file .env sfu-courses-api
-```
-
-### Test the Update Endpoint
-```bash
-curl -X POST http://localhost:8080/update \
-  -H "Content-Type: text/plain" \
-  -d "your-secure-password-here"
+docker run -p 8080:8080
 ```
 
 ### Useful Docker Commands
