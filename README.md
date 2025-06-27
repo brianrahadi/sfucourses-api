@@ -128,7 +128,7 @@ docker build -t sfu-courses-api .
 
 ### Run the Container
 ```bash
-docker run -p 8080:8080
+docker run -p 8080:8080 sfu-courses-api
 ```
 
 ### Useful Docker Commands

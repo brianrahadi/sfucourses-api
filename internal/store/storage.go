@@ -18,23 +18,27 @@ type Storage struct {
 		GetAll(context.Context, mo.Option[int], mo.Option[int]) ([]model.CourseOutline, int, error)
 		GetByDept(context.Context, string) ([]model.CourseOutline, error)
 		GetByDeptAndNumber(context.Context, string, string) (model.CourseOutline, error)
+		ForceReload() error
 	}
 
 	Sections interface {
 		GetByTerm(context.Context, string, string) ([]model.CourseWithSectionDetails, error)
 		GetByTermAndDept(context.Context, string, string, string) ([]model.CourseWithSectionDetails, error)
 		GetByTermAndDeptAndNumber(context.Context, string, string, string, string) (model.CourseWithSectionDetails, error)
+		ForceReload() error
 	}
 
 	SectionsWithOutlines interface {
 		GetByTerm(context.Context, string, string) ([]model.CourseOutlineWithSectionDetails, error)
 		GetByTermAndDept(context.Context, string, string, string) ([]model.CourseOutlineWithSectionDetails, error)
 		GetByTermAndDeptAndNumber(context.Context, string, string, string, string) (model.CourseOutlineWithSectionDetails, error)
+		ForceReload() error
 	}
 }
 
 func NewStorage() Storage {
 	outlines, err := NewOutlineStore()
+
 	if err != nil {
 		log.Fatal("Error loading outlines store")
 		outlines = &OutlineStore{}

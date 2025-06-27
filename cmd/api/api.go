@@ -159,7 +159,6 @@ func (app *application) middleware(next http.Handler) http.Handler {
 	}), 60*time.Second, "Request timed out")
 }
 
-// runDataSync executes all data sync commands
 func (app *application) runDataSync() (int, int) {
 	log.Printf("Starting data sync at %v", time.Now().UTC())
 
@@ -194,6 +193,17 @@ func (app *application) runDataSync() (int, int) {
 
 		log.Printf("Successfully completed %s\nOutput: %s", cmdInfo.name, output)
 		successCount++
+	}
+
+	// Force reload all data after sync
+	if err := app.store.Outlines.ForceReload(); err != nil {
+		log.Printf("Error reloading outlines: %v", err)
+	}
+	if err := app.store.Sections.ForceReload(); err != nil {
+		log.Printf("Error reloading sections: %v", err)
+	}
+	if err := app.store.SectionsWithOutlines.ForceReload(); err != nil {
+		log.Printf("Error reloading sections with outlines: %v", err)
 	}
 
 	// Update the lastDataUpdate time
