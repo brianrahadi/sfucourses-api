@@ -206,7 +206,10 @@ func (app *application) runDataSync() (int, int) {
 		log.Printf("Error reloading sections with outlines: %v", err)
 	}
 
-	// Update the lastDataUpdate time
+	// trigger client ssg revalidation
+	app.triggerRevalidation("revalidate-explore")
+	app.triggerRevalidation("revalidate-schedule")
+
 	app.lastDataUpdateLock.Lock()
 	app.lastDataUpdate = time.Now().UTC()
 	app.lastDataUpdateLock.Unlock()
@@ -383,4 +386,28 @@ type SectionResponse struct {
 type ErrorResponse struct {
 	Error   string `json:"error"`
 	Message string `json:"message,omitempty"`
+}
+
+// Update triggerRevalidation to accept a type parameter and add it to the query string
+func (app *application) triggerRevalidation(revalidationType string) {
+	revalidateSecret := os.Getenv("REVALIDATE_SECRET")
+	if revalidateSecret == "" {
+		log.Printf("REVALIDATE_SECRET not set, skipping revalidation call")
+		return
+	}
+	url := "https://sfucourses.com/api/revalidate?secret=" + revalidateSecret + "&type=" + revalidationType
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		log.Printf("Error creating revalidate request: %v", err)
+		return
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Error calling revalidate endpoint: %v", err)
+		return
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	log.Printf("Revalidate response: %s", string(body))
 }
