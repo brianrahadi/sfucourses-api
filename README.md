@@ -105,7 +105,7 @@ To get a local copy up and running follow these simple example steps.
 2. Change git remote url to avoid accidental pushes to base project
    ```sh
    git remote set-url origin brianrahadi/sfucourses-api
-   git remote -v # confirm the changes
+   git remote -v
    ```
 
 3. Run the project through air.toml or docker
@@ -128,7 +128,6 @@ docker build -t sfu-courses-api .
 
 ### Run the Container
 ```bash
-# Run with .env file
 docker run -p 8080:8080
 ```
 
