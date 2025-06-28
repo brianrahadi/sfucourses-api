@@ -68,6 +68,22 @@ type Instructor struct {
 	Email string `json:"email" example:"john_doe@sfu.ca" description:"Instructor's email address"`
 }
 
+// InstructorResponse represents instructor information
+// @Description Instructor information
+type InstructorResponse struct {
+	Name      string               `json:"name" example:"John Doe" description:"Instructor's full name"`
+	Offerings []InstructorOffering `json:"offerings" description:"List of course offerings"`
+}
+
+// InstructorOffering represents an instructor's offering of a course
+// @Description Instructor offering information
+type InstructorOffering struct {
+	Dept   string `json:"dept" example:"CMPT" description:"Department code"`
+	Number string `json:"number" example:"225" description:"Course number"`
+	Title  string `json:"title" example:"Data Structures and Algorithms" description:"Course title"`
+	Term   string `json:"term" example:"Fall 2024" description:"Academic term"`
+}
+
 // SectionSchedule represents a section's schedule information
 // @Description Schedule information for a section
 type SectionSchedule struct {

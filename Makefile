@@ -17,6 +17,10 @@ build-sync-offerings:
 build-sync-instructors:
 	go build -o bin/sync-instructors scripts/syncInstructors/main.go
 
+.PHONY: build-fetch-instructors
+build-fetch-instructors:
+	go build -o bin/fetch-instructors scripts/fetchInstructors/main.go
+
 .PHONY: fetch-outlines
 fetch-outlines:
 	go run scripts/fetchOutlines/main.go

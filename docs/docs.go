@@ -41,6 +41,189 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/rest/instructors": {
+            "get": {
+                "description": "Retrieves a list of all instructors with their course offerings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Instructors"
+                ],
+                "summary": "Get all instructors",
+                "responses": {
+                    "200": {
+                        "description": "Response for instructors",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.InstructorResponse"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No instructors found",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rest/instructors/{dept}": {
+            "get": {
+                "description": "Retrieves all instructors who teach courses in a specific department",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Instructors"
+                ],
+                "summary": "Get instructors by department",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Department code (e.g., CMPT, MATH)",
+                        "name": "dept",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of instructors for the department",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/model.InstructorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Department not found or no instructors available",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rest/instructors/{dept}/{number}": {
+            "get": {
+                "description": "Retrieves all instructors who teach a specific course",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Instructors"
+                ],
+                "summary": "Get instructors by department and course number",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Department code (e.g., CMPT, MATH)",
+                        "name": "dept",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Course number (e.g., 120, 225)",
+                        "name": "number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of instructors for the course",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/model.InstructorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Course not found or no instructors available",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rest/instructors/{name}": {
+            "get": {
+                "description": "Retrieves a specific instructor containing their name with all their course offerings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Instructors"
+                ],
+                "summary": "Get instructor by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Instructor name (URL encoded)",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Instructor details with offerings",
+                        "schema": {
+                            "$ref": "#/definitions/model.InstructorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Instructor not found",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/rest/outlines/all": {
             "get": {
                 "description": "Retrieves a paginated list of all course outlines",
@@ -563,6 +746,44 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "example": "John Doe"
+                }
+            }
+        },
+        "model.InstructorOffering": {
+            "description": "Instructor offering information",
+            "type": "object",
+            "properties": {
+                "dept": {
+                    "type": "string",
+                    "example": "CMPT"
+                },
+                "number": {
+                    "type": "string",
+                    "example": "225"
+                },
+                "term": {
+                    "type": "string",
+                    "example": "Fall 2024"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Data Structures and Algorithms"
+                }
+            }
+        },
+        "model.InstructorResponse": {
+            "description": "Instructor information",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "offerings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.InstructorOffering"
+                    }
                 }
             }
         },

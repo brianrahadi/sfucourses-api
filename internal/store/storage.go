@@ -34,6 +34,13 @@ type Storage struct {
 		GetByTermAndDeptAndNumber(context.Context, string, string, string, string) (model.CourseOutlineWithSectionDetails, error)
 		ForceReload() error
 	}
+
+	Instructors interface {
+		GetAll(context.Context) ([]model.InstructorResponse, error)
+		GetByDept(context.Context, string) ([]model.InstructorResponse, error)
+		GetByDeptAndNumber(context.Context, string, string) ([]model.InstructorResponse, error)
+		ForceReload() error
+	}
 }
 
 func NewStorage() Storage {
@@ -54,9 +61,17 @@ func NewStorage() Storage {
 		log.Fatal("Error loading sections store")
 		sectionsWithOutline = &SectionsWithOutlineStore{}
 	}
+
+	instructors, err := NewInstructorStore()
+	if err != nil {
+		log.Fatal("Error loading instructors store")
+		instructors = &InstructorStore{}
+	}
+
 	return Storage{
 		Outlines:             outlines,
 		Sections:             sections,
 		SectionsWithOutlines: sectionsWithOutline,
+		Instructors:          instructors,
 	}
 }

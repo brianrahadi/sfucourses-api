@@ -20,6 +20,7 @@ type InstructorOffering struct {
 	Dept   string `json:"dept"`
 	Number string `json:"number"`
 	Term   string `json:"term"`
+	Title  string `json:"title"`
 }
 
 type Instructor struct {
@@ -62,6 +63,7 @@ func main() {
 					Dept:   outline.Dept,
 					Number: outline.Number,
 					Term:   offering.Term,
+					Title:  outline.Title,
 				}
 
 				instructor := instructorMap[cleanName]
