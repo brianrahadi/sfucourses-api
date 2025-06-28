@@ -96,8 +96,8 @@ type SectionSchedule struct {
 	SectionCode string `json:"sectionCode" example:"LEC" description:"Section code type (LEC, TUT, LAB)"`
 }
 
-// SectionDetailRaw represents raw section detail from SFU Courses API
-// @Description Raw section detail information from SFU Courses API
+// SectionDetailRaw represents raw section detail from sfucourses API
+// @Description Raw section detail information from sfucourses API
 type SectionDetailRaw struct {
 	Info           SectionInfo       `json:"info" description:"Basic section information"`
 	Instructor     []Instructor      `json:"instructor" description:"List of instructors (singular for parsing)"`

@@ -874,7 +874,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "api.sfucourses.com",
 	BasePath:         "",
 	Schemes:          []string{"https"},
-	Title:            "SFU Courses API",
+	Title:            "sfucourses API",
 	Description:      "Unofficial API for accessing SFU course outlines, sections, and instructors robustly and used to power [sfucourses.com](https://sfucourses.com). Data is pulled from [SFU Course Outlines REST API](https://www.sfu.ca/outlines/help/api.html). This API is not affiliated with Simon Fraser University.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

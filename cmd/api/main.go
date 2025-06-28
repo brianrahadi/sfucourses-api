@@ -9,9 +9,9 @@ import (
 // Version of the API
 const version = "1.0.0"
 
-// Package main provides the entry point for the SFU Courses API.
+// Package main provides the entry point for the sfucourses API.
 //
-//	@title			SFU Courses API
+//	@title			sfucourses API
 //	@description	Unofficial API for accessing SFU course outlines, sections, and instructors robustly and used to power [sfucourses.com](https://sfucourses.com). Data is pulled from [SFU Course Outlines REST API](https://www.sfu.ca/outlines/help/api.html). This API is not affiliated with Simon Fraser University.
 //	@schemes		https
 //	@host			api.sfucourses.com
