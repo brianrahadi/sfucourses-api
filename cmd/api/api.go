@@ -111,6 +111,11 @@ func (app *application) mount() http.Handler {
 	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}/{dept}", app.getSectionsByTermAndDept)
 	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}/{dept}/{number}", app.getSectionsByTermAndDeptAndNumber)
 
+	mux.HandleFunc("GET /v1/rest/instructors", app.getInstructors)
+	mux.HandleFunc("GET /v1/rest/instructors/names/{name}", app.getInstructorsByName)
+	mux.HandleFunc("GET /v1/rest/instructors/{dept}", app.getInstructorsByDept)
+	mux.HandleFunc("GET /v1/rest/instructors/{dept}/{number}", app.getInstructorsByDeptAndNumber)
+
 	return mux
 }
 
@@ -174,6 +179,7 @@ func (app *application) runDataSync() (int, int) {
 		{"fetch-sections", []string{nextTermYear, nextTermTerm}},
 		{"sync-offerings", []string{}},
 		{"sync-instructors", []string{}},
+		{"fetch-instructors", []string{}},
 	}
 
 	successCount := 0
@@ -204,6 +210,9 @@ func (app *application) runDataSync() (int, int) {
 	}
 	if err := app.store.SectionsWithOutlines.ForceReload(); err != nil {
 		log.Printf("Error reloading sections with outlines: %v", err)
+	}
+	if err := app.store.Instructors.ForceReload(); err != nil {
+		log.Printf("Error reloading instructors: %v", err)
 	}
 
 	// trigger client ssg revalidation

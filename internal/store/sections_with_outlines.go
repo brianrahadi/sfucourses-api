@@ -97,9 +97,9 @@ func (s *SectionsWithOutlineStore) loadSectionsWithOutlines() error {
 	}
 
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.cachedSectionsWithOutlines = newSectionsWithOutlines
 	s.lastLoaded = time.Now()
-	s.mu.Unlock()
 
 	return nil
 }
@@ -110,8 +110,9 @@ func (s *SectionsWithOutlineStore) ForceReload() error {
 
 func (s *SectionsWithOutlineStore) reloadIfNeeded() error {
 	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	shouldReload := time.Since(s.lastLoaded) > 5*time.Minute // Check every 5 minutes
-	s.mu.RUnlock()
 
 	if shouldReload {
 		if err := s.loadSectionsWithOutlines(); err != nil {

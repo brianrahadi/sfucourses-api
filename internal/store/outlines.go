@@ -102,9 +102,6 @@ func (s *OutlineStore) GetByDept(ctx context.Context, dept string) ([]CourseOutl
 		return nil, err
 	}
 
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
 	dept = strings.ToUpper(dept)
 	outlines := lo.Filter(s.cachedOutlines, func(outline CourseOutline, _ int) bool {
 		return outline.Dept == dept
@@ -121,9 +118,6 @@ func (s *OutlineStore) GetByDeptAndNumber(ctx context.Context, dept string, numb
 	if err := s.reloadIfNeeded(); err != nil {
 		return CourseOutline{}, err
 	}
-
-	s.mu.RLock()
-	defer s.mu.RUnlock()
 
 	dept = strings.ToUpper(dept)
 	number = strings.ToUpper(number)

@@ -124,6 +124,33 @@ definitions:
         example: John Doe
         type: string
     type: object
+  model.InstructorOffering:
+    description: Instructor offering information
+    properties:
+      dept:
+        example: CMPT
+        type: string
+      number:
+        example: "225"
+        type: string
+      term:
+        example: Fall 2024
+        type: string
+      title:
+        example: Data Structures and Algorithms
+        type: string
+    type: object
+  model.InstructorResponse:
+    description: Instructor information
+    properties:
+      name:
+        example: John Doe
+        type: string
+      offerings:
+        items:
+          $ref: '#/definitions/model.InstructorOffering'
+        type: array
+    type: object
   model.SectionDetail:
     description: Detailed information about a course section
     properties:
@@ -196,6 +223,128 @@ paths:
       summary: Health check endpoint
       tags:
       - Health
+  /v1/rest/instructors:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all instructors with their course offerings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Response for instructors
+          schema:
+            items:
+              $ref: '#/definitions/model.InstructorResponse'
+            type: array
+        "404":
+          description: No instructors found
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get all instructors
+      tags:
+      - Instructors
+  /v1/rest/instructors/{dept}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all instructors who teach courses in a specific department
+      parameters:
+      - description: Department code (e.g., CMPT, MATH)
+        in: path
+        name: dept
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of instructors for the department
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/model.InstructorResponse'
+              type: array
+            type: array
+        "404":
+          description: Department not found or no instructors available
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get instructors by department
+      tags:
+      - Instructors
+  /v1/rest/instructors/{dept}/{number}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all instructors who teach a specific course
+      parameters:
+      - description: Department code (e.g., CMPT, MATH)
+        in: path
+        name: dept
+        required: true
+        type: string
+      - description: Course number (e.g., 120, 225)
+        in: path
+        name: number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of instructors for the course
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/model.InstructorResponse'
+              type: array
+            type: array
+        "404":
+          description: Course not found or no instructors available
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get instructors by department and course number
+      tags:
+      - Instructors
+  /v1/rest/instructors/{name}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific instructor containing their name with all
+        their course offerings
+      parameters:
+      - description: Instructor name (URL encoded)
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Instructor details with offerings
+          schema:
+            $ref: '#/definitions/model.InstructorResponse'
+        "404":
+          description: Instructor not found
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get instructor by name
+      tags:
+      - Instructors
   /v1/rest/outlines/{dept}:
     get:
       consumes:
