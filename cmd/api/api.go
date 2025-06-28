@@ -70,7 +70,7 @@ func (app *application) mount() http.Handler {
 	// 		<title>Welcome</title>
 	// 	</head>
 	// 	<body>
-	// 		<h1>Welcome to SFU Courses API</h1>
+	// 		<h1>Welcome to sfucourses API</h1>
 	// 		<a href="./docs">Go to docs</a>
 	// 	</body>
 	// 	</html>
@@ -87,7 +87,7 @@ func (app *application) mount() http.Handler {
 		htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
 			SpecURL: "./docs/swagger.json",
 			CustomOptions: scalar.CustomOptions{
-				PageTitle: "SFU Courses API",
+				PageTitle: "sfucourses API",
 			},
 			Theme:    scalar.ThemeDefault,
 			DarkMode: true,

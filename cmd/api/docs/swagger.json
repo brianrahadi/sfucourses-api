@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "title": "SFU Courses API",
+        "title": "sfucourses API",
         "contact": {}
     },
     "host": "api.sfucourses.com",

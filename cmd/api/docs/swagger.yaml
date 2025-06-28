@@ -142,7 +142,7 @@ definitions:
 host: api.sfucourses.com
 info:
   contact: {}
-  title: SFU Courses API
+  title: sfucourses API
 paths:
   /outlines/{dept}:
     get:
