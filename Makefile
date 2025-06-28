@@ -33,6 +33,10 @@ sync-offerings:
 sync-instructors:
 	go run scripts/syncInstructors/main.go
 
+.PHONY: fetch-instructors
+fetch-instructors:
+	go run scripts/fetchInstructors/main.go
+
 .PHONY: gen-docs
 gen-docs:
 	@swag init -g ./api/main.go -d cmd,internal && swag fmt
