@@ -54,7 +54,6 @@ func main() {
 				if _, exists := instructorMap[cleanName]; !exists {
 					instructorMap[cleanName] = &Instructor{
 						Name:      cleanName,
-						Email:     "", // Email will be empty as per requirement
 						Offerings: []InstructorOffering{},
 					}
 				}
@@ -147,7 +146,7 @@ func termToSortableValue(term string) int {
 }
 
 func writeInstructorsToJSON(instructors []Instructor, filePath string) error {
-	jsonData, err := json.MarshalIndent(instructors, "", "  ")
+	jsonData, err := json.Marshal(instructors)
 	if err != nil {
 		return fmt.Errorf("error marshaling instructors to JSON: %w", err)
 	}
