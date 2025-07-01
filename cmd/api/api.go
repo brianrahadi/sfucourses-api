@@ -218,6 +218,7 @@ func (app *application) runDataSync() (int, int) {
 	// trigger client ssg revalidation
 	app.triggerRevalidation("revalidate-explore")
 	app.triggerRevalidation("revalidate-schedule")
+	app.triggerRevalidation("revalidate-instructors")
 
 	app.lastDataUpdateLock.Lock()
 	app.lastDataUpdate = time.Now().UTC()
