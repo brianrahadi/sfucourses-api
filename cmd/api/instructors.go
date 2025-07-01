@@ -108,10 +108,10 @@ func (app *application) getInstructorsByDeptAndNumber(w http.ResponseWriter, r *
 // @Accept			json
 // @Produce		json
 // @Param			name	path		string						true	"Instructor name (URL encoded)"
-// @Success		200		{object}	model.InstructorResponse	"Instructor details with offerings"
+// @Success		200		{array}		model.InstructorResponse	"Instructor details with offerings"
 // @Failure		404		{object}	ErrorResponse				"Instructor not found"
 // @Failure		500		{object}	ErrorResponse				"Internal server error"
-// @Router			/v1/rest/instructors/{name} [get]
+// @Router			/v1/rest/instructors/names/{name} [get]
 func (app *application) getInstructorsByName(w http.ResponseWriter, r *http.Request) {
 	name := r.PathValue("name")
 	ctx := r.Context()
@@ -128,7 +128,7 @@ func (app *application) getInstructorsByName(w http.ResponseWriter, r *http.Requ
 	}
 
 	filteredInstructors := lo.Filter(instructors, func(instructor model.InstructorResponse, _ int) bool {
-		return strings.Contains(instructor.Name, name)
+		return strings.Contains(strings.ToLower(instructor.Name), strings.ToLower(name))
 	})
 
 	if err := writeJSON(w, http.StatusOK, filteredInstructors); err != nil {
