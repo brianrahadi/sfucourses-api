@@ -28,6 +28,17 @@ type Instructor struct {
 	Offerings []InstructorOffering `json:"offerings"`
 }
 
+func filterValidInstructors(instructors []Instructor) []Instructor {
+	filtered := make([]Instructor, 0, len(instructors))
+	for _, inst := range instructors {
+		if strings.Contains(inst.Name, "TBA") || strings.Contains(strings.ToLower(inst.Name), "faculty") || strings.Contains(strings.ToLower(inst.Name), "sessional") {
+			continue
+		}
+		filtered = append(filtered, inst)
+	}
+	return filtered
+}
+
 func main() {
 	BASE_PATH := "./internal/store/json"
 
@@ -99,6 +110,7 @@ func main() {
 		instructors = append(instructors, *instructor)
 	}
 
+	instructors = filterValidInstructors(instructors)
 	slices.SortFunc(instructors, func(a, b Instructor) int {
 		return strings.Compare(a.Name, b.Name)
 	})
