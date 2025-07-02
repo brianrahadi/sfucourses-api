@@ -8,8 +8,9 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o api cmd/api/*.go
 RUN mkdir -p bin
 RUN CGO_ENABLED=0 GOOS=linux go build -o bin/fetch-sections scripts/fetchSections/main.go
 RUN CGO_ENABLED=0 GOOS=linux go build -o bin/fetch-outlines scripts/fetchOutlines/main.go
-RUN CGO_ENABLED=0 GOOS=linux go build -o bin/sync-offerings scripts/syncOfferings/main.go || true
-RUN CGO_ENABLED=0 GOOS=linux go build -o bin/sync-instructors scripts/syncInstructors/main.go || true
+RUN CGO_ENABLED=0 GOOS=linux go build -o bin/sync-offerings scripts/syncOfferings/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o bin/sync-instructors scripts/syncInstructors/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o bin/fetch-instructors scripts/fetchInstructors/main.go
 
 # The run stage
 FROM alpine:latest
