@@ -73,6 +73,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/rest/instructors/names/{name}": {
+            "get": {
+                "description": "Retrieves a specific instructor containing their name with all their course offerings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Instructors"
+                ],
+                "summary": "Get instructor by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Instructor name (URL encoded)",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Instructor details with offerings",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.InstructorResponse"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Instructor not found",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/rest/instructors/{dept}": {
             "get": {
                 "description": "Retrieves all instructors who teach courses in a specific department",
@@ -167,50 +214,6 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Course not found or no instructors available",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/rest/instructors/{name}": {
-            "get": {
-                "description": "Retrieves a specific instructor containing their name with all their course offerings",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Instructors"
-                ],
-                "summary": "Get instructor by name",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Instructor name (URL encoded)",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Instructor details with offerings",
-                        "schema": {
-                            "$ref": "#/definitions/model.InstructorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Instructor not found",
                         "schema": {
                             "$ref": "#/definitions/main.ErrorResponse"
                         }

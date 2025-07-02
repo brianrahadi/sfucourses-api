@@ -201,7 +201,6 @@ func (app *application) runDataSync() (int, int) {
 		successCount++
 	}
 
-	// Force reload all data after sync
 	if err := app.store.Outlines.ForceReload(); err != nil {
 		log.Printf("Error reloading outlines: %v", err)
 	}

@@ -315,7 +315,7 @@ paths:
       summary: Get instructors by department and course number
       tags:
       - Instructors
-  /v1/rest/instructors/{name}:
+  /v1/rest/instructors/names/{name}:
     get:
       consumes:
       - application/json
@@ -333,7 +333,9 @@ paths:
         "200":
           description: Instructor details with offerings
           schema:
-            $ref: '#/definitions/model.InstructorResponse'
+            items:
+              $ref: '#/definitions/model.InstructorResponse'
+            type: array
         "404":
           description: Instructor not found
           schema:
