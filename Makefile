@@ -1,5 +1,5 @@
 .PHONY: build-all
-build-all: build-fetch-sections build-fetch-outlines build-sync-offerings build-sync-instructors
+build-all: build-fetch-sections build-fetch-outlines build-sync-offerings build-sync-instructors build-fetch-instructors
 
 .PHONY: build-fetch-sections
 build-fetch-sections:

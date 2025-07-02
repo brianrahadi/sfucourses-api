@@ -201,7 +201,6 @@ func (app *application) runDataSync() (int, int) {
 		successCount++
 	}
 
-	// Force reload all data after sync
 	if err := app.store.Outlines.ForceReload(); err != nil {
 		log.Printf("Error reloading outlines: %v", err)
 	}
@@ -218,7 +217,6 @@ func (app *application) runDataSync() (int, int) {
 	// trigger client ssg revalidation
 	app.triggerRevalidation("revalidate-explore")
 	app.triggerRevalidation("revalidate-schedule")
-	app.triggerRevalidation("revalidate-instructors")
 
 	app.lastDataUpdateLock.Lock()
 	app.lastDataUpdate = time.Now().UTC()
