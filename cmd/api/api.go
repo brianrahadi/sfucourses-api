@@ -104,9 +104,7 @@ func (app *application) mount() http.Handler {
 	mux.HandleFunc("POST /update", app.manualUpdateHandler)
 
 	mux.HandleFunc("GET /v1/rest/outlines", app.getCourseOutlines)
-
 	mux.HandleFunc("GET /v1/rest/sections", app.getSections)
-
 	mux.HandleFunc("GET /v1/rest/instructors", app.getInstructors)
 
 	return mux
@@ -199,9 +197,6 @@ func (app *application) runDataSync() (int, int) {
 	}
 	if err := app.store.Sections.ForceReload(); err != nil {
 		log.Printf("Error reloading sections: %v", err)
-	}
-	if err := app.store.SectionsWithOutlines.ForceReload(); err != nil {
-		log.Printf("Error reloading sections with outlines: %v", err)
 	}
 	if err := app.store.Instructors.ForceReload(); err != nil {
 		log.Printf("Error reloading instructors: %v", err)

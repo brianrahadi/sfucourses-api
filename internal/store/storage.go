@@ -23,11 +23,6 @@ type Storage struct {
 		ForceReload() error
 	}
 
-	SectionsWithOutlines interface {
-		Get(context.Context, string, string, string, string) ([]model.CourseOutlineWithSectionDetails, error)
-		ForceReload() error
-	}
-
 	Instructors interface {
 		Get(context.Context, string, string, string) ([]model.InstructorResponse, error)
 		ForceReload() error
@@ -47,12 +42,6 @@ func NewStorage() Storage {
 		sections = &SectionsStore{}
 	}
 
-	sectionsWithOutline, err := NewSectionsWithOutlineStore()
-	if err != nil {
-		log.Fatal("Error loading sections store")
-		sectionsWithOutline = &SectionsWithOutlineStore{}
-	}
-
 	instructors, err := NewInstructorStore()
 	if err != nil {
 		log.Fatal("Error loading instructors store")
@@ -60,9 +49,8 @@ func NewStorage() Storage {
 	}
 
 	return Storage{
-		Outlines:             outlines,
-		Sections:             sections,
-		SectionsWithOutlines: sectionsWithOutline,
-		Instructors:          instructors,
+		Outlines:    outlines,
+		Sections:    sections,
+		Instructors: instructors,
 	}
 }

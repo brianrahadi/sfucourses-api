@@ -168,7 +168,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Year and term in format YYYY-Term (e.g., 2024-spring)",
-                        "name": "yearTerm",
+                        "name": "term",
                         "in": "query",
                         "required": true
                     },

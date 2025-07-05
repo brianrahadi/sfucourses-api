@@ -2,13 +2,14 @@ package main
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/brianrahadi/sfucourses-api/internal/store"
 )
 
-// Helper function to split yearTerm parameter into year and term components
+// Helper function to split term parameter into year and term components
 func splitYearTerm(yearTerm string) (year, term string, err error) {
 	parts := strings.Split(yearTerm, "-")
 	if len(parts) != 2 {
@@ -22,26 +23,27 @@ func splitYearTerm(yearTerm string) (year, term string, err error) {
 // @Tags			Sections
 // @Accept			json
 // @Produce		json
-// @Param			yearTerm	query		string								true	"Year and term in format YYYY-Term (e.g., 2024-spring)"
-// @Param			dept		query		string								false	"Department code (e.g., cmpt, math)"
-// @Param			number		query		string								false	"Course number (e.g., 120, 225)"
-// @Success		200			{array}		[]model.CourseWithSectionDetails	"List of sections"
-// @Failure		400			{object}	ErrorResponse						"Invalid year-term format or query parameters"
-// @Failure		404			{object}	ErrorResponse						"No sections found for the specified criteria"
-// @Failure		500			{object}	ErrorResponse						"Internal server error"
+// @Param			term	query		string								true	"Year and term in format YYYY-Term (e.g., 2024-spring)"
+// @Param			dept	query		string								false	"Department code (e.g., cmpt, math)"
+// @Param			number	query		string								false	"Course number (e.g., 120, 225)"
+// @Success		200		{array}		[]model.CourseWithSectionDetails	"List of sections"
+// @Failure		400		{object}	ErrorResponse						"Invalid year-term format or query parameters"
+// @Failure		404		{object}	ErrorResponse						"No sections found for the specified criteria"
+// @Failure		500		{object}	ErrorResponse						"Internal server error"
 // @Router			/v1/rest/sections [get]
 func (app *application) getSections(w http.ResponseWriter, r *http.Request) {
-	yearTerm := r.URL.Query().Get("yearTerm")
+	term := r.URL.Query().Get("term")
 	dept := r.URL.Query().Get("dept")
 	number := r.URL.Query().Get("number")
 	ctx := r.Context()
 
-	if yearTerm == "" {
-		app.badRequestResponse(w, r, errors.New("yearTerm parameter is required"))
+	if term == "" {
+		app.badRequestResponse(w, r, errors.New("term parameter is required"))
 		return
 	}
 
-	year, term, err := splitYearTerm(yearTerm)
+	year, term, err := splitYearTerm(term)
+	log.Println(year, term)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return

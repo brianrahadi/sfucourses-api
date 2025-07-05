@@ -292,7 +292,7 @@ paths:
       parameters:
       - description: Year and term in format YYYY-Term (e.g., 2024-spring)
         in: query
-        name: yearTerm
+        name: term
         required: true
         type: string
       - description: Department code (e.g., cmpt, math)
