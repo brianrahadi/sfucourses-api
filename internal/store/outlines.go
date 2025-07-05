@@ -5,14 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"sort"
 	"strings"
 	"sync"
 	"time"
 
 	. "github.com/brianrahadi/sfucourses-api/internal/model"
 	"github.com/samber/lo"
-	"github.com/samber/mo"
 )
 
 type OutlineStore struct {
@@ -70,71 +68,34 @@ func (s *OutlineStore) reloadIfNeeded() error {
 	return nil
 }
 
-func (s *OutlineStore) GetAll(ctx context.Context, limitOpt mo.Option[int], offsetOpt mo.Option[int]) ([]CourseOutline, int, error) {
+func (s *OutlineStore) Get(ctx context.Context, dept, number string) ([]CourseOutline, error) {
 	if err := s.reloadIfNeeded(); err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	totalCount := len(s.cachedOutlines)
-	if limitOpt.IsAbsent() && offsetOpt.IsAbsent() {
-		return s.cachedOutlines, totalCount, nil
-	}
-	limit := limitOpt.OrElse(totalCount)
-	offset := offsetOpt.OrElse(0)
-
-	if offset >= totalCount {
-		return []CourseOutline{}, 0, nil
-	}
-
-	end := offset + limit
-	if end > totalCount {
-		end = totalCount
-	}
-
-	return s.cachedOutlines[offset:end], totalCount, nil
-}
-
-func (s *OutlineStore) GetByDept(ctx context.Context, dept string) ([]CourseOutline, error) {
-	if err := s.reloadIfNeeded(); err != nil {
-		return nil, err
-	}
-
-	dept = strings.ToUpper(dept)
-	outlines := lo.Filter(s.cachedOutlines, func(outline CourseOutline, _ int) bool {
-		return outline.Dept == dept
-	})
-
-	if len(outlines) == 0 {
-		return outlines, ErrNotFound
-	}
-
-	return outlines, nil
-}
-
-func (s *OutlineStore) GetByDeptAndNumber(ctx context.Context, dept string, number string) (CourseOutline, error) {
-	if err := s.reloadIfNeeded(); err != nil {
-		return CourseOutline{}, err
+	if dept == "" && number == "" {
+		return s.cachedOutlines, nil
 	}
 
 	dept = strings.ToUpper(dept)
 	number = strings.ToUpper(number)
 
-	index := sort.Search(len(s.cachedOutlines), func(i int) bool {
-		if s.cachedOutlines[i].Dept > dept {
-			return true
-		}
-		if s.cachedOutlines[i].Dept == dept {
-			return s.cachedOutlines[i].Number >= number
-		}
-		return false
-	})
-
-	if index < len(s.cachedOutlines) && s.cachedOutlines[index].Dept == dept && s.cachedOutlines[index].Number == number {
-		return s.cachedOutlines[index], nil
+	if dept != "" && number == "" {
+		outlines := lo.Filter(s.cachedOutlines, func(outline CourseOutline, _ int) bool {
+			return outline.Dept == dept
+		})
+		return outlines, nil
 	}
 
-	return CourseOutline{}, ErrNotFound
+	if dept != "" && number != "" {
+		outlines := lo.Filter(s.cachedOutlines, func(outline CourseOutline, _ int) bool {
+			return outline.Dept == dept && outline.Number == number
+		})
+		return outlines, nil
+	}
+
+	return nil, ErrNotFound
 }

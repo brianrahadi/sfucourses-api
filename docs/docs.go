@@ -43,7 +43,7 @@ const docTemplate = `{
         },
         "/v1/rest/instructors": {
             "get": {
-                "description": "Retrieves a list of all instructors with their course offerings",
+                "description": "Retrieves instructors with optional filtering by department, course number, or name",
                 "consumes": [
                     "application/json"
                 ],
@@ -53,10 +53,30 @@ const docTemplate = `{
                 "tags": [
                     "Instructors"
                 ],
-                "summary": "Get all instructors",
+                "summary": "Get instructors",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Department code (e.g., CMPT, MATH)",
+                        "name": "dept",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Course number (e.g., 120, 225)",
+                        "name": "number",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Instructor name (URL encoded)",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Response for instructors",
+                        "description": "List of instructors",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -69,47 +89,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/main.ErrorResponse"
                         }
-                    }
-                }
-            }
-        },
-        "/v1/rest/instructors/names/{name}": {
-            "get": {
-                "description": "Retrieves a specific instructor containing their name with all their course offerings",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Instructors"
-                ],
-                "summary": "Get instructor by name",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Instructor name (URL encoded)",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Instructor details with offerings",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.InstructorResponse"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Instructor not found",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
                     },
                     "500": {
                         "description": "Internal server error",
@@ -120,9 +99,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/rest/instructors/{dept}": {
+        "/v1/rest/outlines": {
             "get": {
-                "description": "Retrieves all instructors who teach courses in a specific department",
+                "description": "Retrieves course outlines, optionally filtered by department and/or course number",
                 "consumes": [
                     "application/json"
                 ],
@@ -130,183 +109,35 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Instructors"
+                    "Outlines"
                 ],
-                "summary": "Get instructors by department",
+                "summary": "Get course outlines",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Department code (e.g., CMPT, MATH)",
                         "name": "dept",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of instructors for the department",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/model.InstructorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Department not found or no instructors available",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/rest/instructors/{dept}/{number}": {
-            "get": {
-                "description": "Retrieves all instructors who teach a specific course",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Instructors"
-                ],
-                "summary": "Get instructors by department and course number",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Department code (e.g., CMPT, MATH)",
-                        "name": "dept",
-                        "in": "path",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "Course number (e.g., 120, 225)",
                         "name": "number",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of instructors for the course",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/model.InstructorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Course not found or no instructors available",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/rest/outlines/all": {
-            "get": {
-                "description": "Retrieves a paginated list of all course outlines",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Outlines"
-                ],
-                "summary": "Get all course outlines",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Number of items to return (pagination)",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Number of items to skip (pagination offset)",
-                        "name": "offset",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Response for course outlines",
-                        "schema": {
-                            "$ref": "#/definitions/model.AllCourseOutlinesResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "No course outlines found",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/rest/outlines/{dept}": {
-            "get": {
-                "description": "Retrieves all course outlines for a specific department",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Outlines"
-                ],
-                "summary": "Get course outlines by department",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Department code (e.g., CMPT, MATH)",
-                        "name": "dept",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of course outlines for the department",
+                        "description": "List of course outlines",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/model.CourseOutline"
-                                }
+                                "$ref": "#/definitions/model.CourseOutline"
                             }
                         }
                     },
                     "404": {
-                        "description": "Department not found or no courses available",
+                        "description": "No outlines found for the specified criteria",
                         "schema": {
                             "$ref": "#/definitions/main.ErrorResponse"
                         }
@@ -320,60 +151,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/rest/outlines/{dept}/{number}": {
+        "/v1/rest/sections": {
             "get": {
-                "description": "Retrieves course outline for a specific department and course number",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Outlines"
-                ],
-                "summary": "Get specific course outline",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Department code (e.g., CMPT, MATH)",
-                        "name": "dept",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Course number (e.g., 120, 225)",
-                        "name": "number",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Course outline details",
-                        "schema": {
-                            "$ref": "#/definitions/model.CourseOutline"
-                        }
-                    },
-                    "404": {
-                        "description": "Course not found",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/rest/sections/{year-term}": {
-            "get": {
-                "description": "Retrieves all course sections for a specific year and term",
+                "description": "Retrieves course sections for a specific year and term, optionally filtered by department and/or course number",
                 "consumes": [
                     "application/json"
                 ],
@@ -383,14 +163,26 @@ const docTemplate = `{
                 "tags": [
                     "Sections"
                 ],
-                "summary": "Get sections by term",
+                "summary": "Get sections",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Year and term in format YYYY-Term (e.g., 2024-Spring)",
-                        "name": "year-term",
-                        "in": "path",
+                        "name": "yearTerm",
+                        "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Department code (e.g., CMPT, MATH)",
+                        "name": "dept",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Course number (e.g., 120, 225)",
+                        "name": "number",
+                        "in": "query"
                     },
                     {
                         "type": "boolean",
@@ -401,152 +193,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of sections without outlines",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/model.CourseWithSectionDetails"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid year-term format or query parameters",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "No sections found for the specified term",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/rest/sections/{year-term}/{dept}": {
-            "get": {
-                "description": "Retrieves all course sections for a specific year, term, and department",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Sections"
-                ],
-                "summary": "Get sections by term and department",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Year and term in format YYYY-Term (e.g., 2024-Spring)",
-                        "name": "year-term",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Department code (e.g., CMPT, MATH)",
-                        "name": "dept",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Whether to include course outline data (default: false)",
-                        "name": "withOutlines",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of sections without outlines",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/model.CourseWithSectionDetails"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid year-term format or query parameters",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "No sections found for the specified term and department",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/main.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/rest/sections/{year-term}/{dept}/{number}": {
-            "get": {
-                "description": "Retrieves all course sections for a specific year, term, department, and course number",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Sections"
-                ],
-                "summary": "Get sections by term, department, and course number",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Year and term in format YYYY-Term (e.g., 2024-Spring)",
-                        "name": "year-term",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Department code (e.g., CMPT, MATH)",
-                        "name": "dept",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Course number (e.g., 120, 225)",
-                        "name": "number",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Whether to include course outline data (default: false)",
-                        "name": "withOutlines",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of sections without outlines",
+                        "description": "List of sections",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -607,26 +254,6 @@ const docTemplate = `{
                 "version": {
                     "type": "string",
                     "example": "1.0.0"
-                }
-            }
-        },
-        "model.AllCourseOutlinesResponse": {
-            "description": "Paginated response containing course outlines",
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.CourseOutline"
-                    }
-                },
-                "next_url": {
-                    "type": "string",
-                    "example": "/v1/rest/outlines?limit=100\u0026offset=50"
-                },
-                "total_count": {
-                    "type": "integer",
-                    "example": 3412
                 }
             }
         },

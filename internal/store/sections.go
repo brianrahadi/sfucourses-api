@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -84,7 +83,7 @@ func (s *SectionsStore) reloadIfNeeded() error {
 	return nil
 }
 
-func (s *SectionsStore) GetByTerm(ctx context.Context, year string, term string) ([]CourseWithSectionDetails, error) {
+func (s *SectionsStore) Get(ctx context.Context, year, term, dept, number string) ([]CourseWithSectionDetails, error) {
 	if err := s.reloadIfNeeded(); err != nil {
 		return nil, err
 	}
@@ -92,54 +91,36 @@ func (s *SectionsStore) GetByTerm(ctx context.Context, year string, term string)
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
+	if year == "" || term == "" {
+		return nil, ErrNotFound
+	}
+
 	key := fmt.Sprintf("%s-%s", year, strings.ToLower(term))
 	courses, found := s.cachedSections[key]
 	if !found {
 		return nil, ErrNotFound
 	}
-	return courses, nil
-}
 
-func (s *SectionsStore) GetByTermAndDept(ctx context.Context, year string, term string, dept string) ([]CourseWithSectionDetails, error) {
-	courses, err := s.GetByTerm(ctx, year, term)
-	if err != nil {
-		return nil, err
-	}
-
-	dept = strings.ToUpper(dept)
-	courses = lo.Filter(courses, func(course CourseWithSectionDetails, _ int) bool {
-		return course.Dept == dept
-	})
-
-	if len(courses) == 0 {
-		return nil, ErrNotFound
-	}
-
-	return courses, nil
-}
-
-func (s *SectionsStore) GetByTermAndDeptAndNumber(ctx context.Context, year string, term string, dept string, number string) (CourseWithSectionDetails, error) {
-	courses, err := s.GetByTerm(ctx, year, term)
-	if err != nil {
-		return CourseWithSectionDetails{}, err
+	if dept == "" && number == "" {
+		return courses, nil
 	}
 
 	dept = strings.ToUpper(dept)
 	number = strings.ToUpper(number)
 
-	index := sort.Search(len(courses), func(i int) bool {
-		if courses[i].Dept > dept {
-			return true
-		}
-		if courses[i].Dept == dept {
-			return courses[i].Number >= number
-		}
-		return false
-	})
-
-	if index < len(courses) && courses[index].Dept == dept && courses[index].Number == number {
-		return courses[index], nil
+	if dept != "" && number == "" {
+		courses = lo.Filter(courses, func(course CourseWithSectionDetails, _ int) bool {
+			return course.Dept == dept
+		})
+		return courses, nil
 	}
 
-	return CourseWithSectionDetails{}, ErrNotFound
+	if dept != "" && number != "" {
+		courses = lo.Filter(courses, func(course CourseWithSectionDetails, _ int) bool {
+			return course.Dept == dept && course.Number == number
+		})
+		return courses, nil
+	}
+
+	return nil, ErrNotFound
 }

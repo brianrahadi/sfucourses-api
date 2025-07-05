@@ -74,72 +74,45 @@ func (s *InstructorStore) reloadIfNeeded() error {
 	return nil
 }
 
-func (s *InstructorStore) GetAll(ctx context.Context) ([]InstructorResponse, error) {
+func (s *InstructorStore) Get(ctx context.Context, dept, number, name string) ([]InstructorResponse, error) {
 	if err := s.reloadIfNeeded(); err != nil {
 		return nil, err
 	}
 
-	return s.cachedInstructors, nil
-}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-func (s *InstructorStore) GetByDept(ctx context.Context, dept string) ([]InstructorResponse, error) {
-	if err := s.reloadIfNeeded(); err != nil {
-		return nil, err
-	}
-
-	dept = strings.ToUpper(dept)
-	instructors := lo.Filter(s.cachedInstructors, func(instructor InstructorResponse, _ int) bool {
-		return lo.SomeBy(instructor.Offerings, func(offering InstructorOffering) bool {
-			return offering.Dept == dept
-		})
-	})
-
-	if len(instructors) == 0 {
-		return instructors, ErrNotFound
-	}
-
-	return instructors, nil
-}
-
-func (s *InstructorStore) GetByDeptAndNumber(ctx context.Context, dept string, number string) ([]InstructorResponse, error) {
-	if err := s.reloadIfNeeded(); err != nil {
-		return nil, err
+	if dept == "" && number == "" && name == "" {
+		return s.cachedInstructors, nil
 	}
 
 	dept = strings.ToUpper(dept)
 	number = strings.ToUpper(number)
 
-	instructors := lo.Filter(s.cachedInstructors, func(instructor InstructorResponse, _ int) bool {
-		return lo.SomeBy(instructor.Offerings, func(offering InstructorOffering) bool {
-			return offering.Dept == dept && offering.Number == number
+	if name != "" {
+		instructors := lo.Filter(s.cachedInstructors, func(instructor InstructorResponse, _ int) bool {
+			return strings.Contains(strings.ToLower(instructor.Name), strings.ToLower(name))
 		})
-	})
-
-	if len(instructors) == 0 {
-		return instructors, ErrNotFound
+		return instructors, nil
 	}
 
-	return instructors, nil
-}
-
-func (s *InstructorStore) GetByName(ctx context.Context, name string) ([]InstructorResponse, error) {
-	if err := s.reloadIfNeeded(); err != nil {
-		return nil, err
+	if dept != "" && number == "" {
+		instructors := lo.Filter(s.cachedInstructors, func(instructor InstructorResponse, _ int) bool {
+			return lo.SomeBy(instructor.Offerings, func(offering InstructorOffering) bool {
+				return offering.Dept == dept
+			})
+		})
+		return instructors, nil
 	}
 
-	// Use binary search since instructors are sorted by name
-	index := sort.Search(len(s.cachedInstructors), func(i int) bool {
-		return strings.ToLower(s.cachedInstructors[i].Name) >= strings.ToLower(name)
-	})
-
-	instructors := make([]InstructorResponse, 0)
-	if index < len(s.cachedInstructors) && strings.EqualFold(s.cachedInstructors[index].Name, name) {
-		instructors = append(instructors, s.cachedInstructors[index])
+	if dept != "" && number != "" {
+		instructors := lo.Filter(s.cachedInstructors, func(instructor InstructorResponse, _ int) bool {
+			return lo.SomeBy(instructor.Offerings, func(offering InstructorOffering) bool {
+				return offering.Dept == dept && offering.Number == number
+			})
+		})
+		return instructors, nil
 	}
 
-	if len(instructors) == 0 {
-		return nil, ErrNotFound
-	}
-
-	return instructors, nil
+	return nil, ErrNotFound
 }

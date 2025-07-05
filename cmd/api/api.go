@@ -103,18 +103,11 @@ func (app *application) mount() http.Handler {
 	mux.HandleFunc("GET /health", app.healthCheckHandler)
 	mux.HandleFunc("POST /update", app.manualUpdateHandler)
 
-	mux.HandleFunc("GET /v1/rest/outlines/all", app.getAllCourseOutlines)
-	mux.HandleFunc("GET /v1/rest/outlines/{dept}", app.getCourseOutlinesByDept)
-	mux.HandleFunc("GET /v1/rest/outlines/{dept}/{number}", app.getCourseOutlinesByDeptAndNumber)
+	mux.HandleFunc("GET /v1/rest/outlines", app.getCourseOutlines)
 
-	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}", app.getSectionsByTerm)
-	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}/{dept}", app.getSectionsByTermAndDept)
-	mux.HandleFunc("GET /v1/rest/sections/{yearTerm}/{dept}/{number}", app.getSectionsByTermAndDeptAndNumber)
+	mux.HandleFunc("GET /v1/rest/sections", app.getSections)
 
-	mux.HandleFunc("GET /v1/rest/instructors/all", app.getAllInstructors)
-	mux.HandleFunc("GET /v1/rest/instructors/names/{name}", app.getInstructorsByName)
-	mux.HandleFunc("GET /v1/rest/instructors/{dept}", app.getInstructorsByDept)
-	mux.HandleFunc("GET /v1/rest/instructors/{dept}/{number}", app.getInstructorsByDeptAndNumber)
+	mux.HandleFunc("GET /v1/rest/instructors", app.getInstructors)
 
 	return mux
 }
