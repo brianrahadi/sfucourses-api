@@ -57,7 +57,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Department code (e.g., CMPT, MATH)",
+                        "description": "Department code (e.g., cmpt, math)",
                         "name": "dept",
                         "in": "query"
                     },

@@ -216,7 +216,7 @@ paths:
       description: Retrieves instructors with optional filtering by department, course
         number, or name
       parameters:
-      - description: Department code (e.g., CMPT, MATH)
+      - description: Department code (e.g., cmpt, math)
         in: query
         name: dept
         type: string

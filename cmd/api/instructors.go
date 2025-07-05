@@ -12,7 +12,7 @@ import (
 // @Tags			Instructors
 // @Accept			json
 // @Produce		json
-// @Param			dept	query		string						false	"Department code (e.g., CMPT, MATH)"
+// @Param			dept	query		string						false	"Department code (e.g., cmpt, math)"
 // @Param			number	query		string						false	"Course number (e.g., 120, 225)"
 // @Param			name	query		string						false	"Instructor name (URL encoded)"
 // @Success		200		{array}		model.InstructorResponse	"List of instructors"
