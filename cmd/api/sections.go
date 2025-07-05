@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"strings"
 
@@ -43,7 +42,6 @@ func (app *application) getSections(w http.ResponseWriter, r *http.Request) {
 	}
 
 	year, term, err := splitYearTerm(term)
-	log.Println(year, term)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
