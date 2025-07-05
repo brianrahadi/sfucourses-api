@@ -115,7 +115,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Department code (e.g., CMPT, MATH)",
+                        "description": "Department code (e.g., cmpt, math)",
                         "name": "dept",
                         "in": "query"
                     },
@@ -167,14 +167,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Year and term in format YYYY-Term (e.g., 2024-Spring)",
+                        "description": "Year and term in format YYYY-Term (e.g., 2024-spring)",
                         "name": "yearTerm",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Department code (e.g., CMPT, MATH)",
+                        "description": "Department code (e.g., cmpt, math)",
                         "name": "dept",
                         "in": "query"
                     },
@@ -182,12 +182,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Course number (e.g., 120, 225)",
                         "name": "number",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Whether to include course outline data (default: false)",
-                        "name": "withOutlines",
                         "in": "query"
                     }
                 ],

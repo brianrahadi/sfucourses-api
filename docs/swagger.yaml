@@ -255,7 +255,7 @@ paths:
       description: Retrieves course outlines, optionally filtered by department and/or
         course number
       parameters:
-      - description: Department code (e.g., CMPT, MATH)
+      - description: Department code (e.g., cmpt, math)
         in: query
         name: dept
         type: string
@@ -290,12 +290,12 @@ paths:
       description: Retrieves course sections for a specific year and term, optionally
         filtered by department and/or course number
       parameters:
-      - description: Year and term in format YYYY-Term (e.g., 2024-Spring)
+      - description: Year and term in format YYYY-Term (e.g., 2024-spring)
         in: query
         name: yearTerm
         required: true
         type: string
-      - description: Department code (e.g., CMPT, MATH)
+      - description: Department code (e.g., cmpt, math)
         in: query
         name: dept
         type: string
@@ -303,10 +303,6 @@ paths:
         in: query
         name: number
         type: string
-      - description: 'Whether to include course outline data (default: false)'
-        in: query
-        name: withOutlines
-        type: boolean
       produces:
       - application/json
       responses:
