@@ -38,6 +38,7 @@ func (s *SectionsStore) ForceReload() error {
 func (s *SectionsStore) loadSections() error {
 	// Define the schedule files
 	scheduleFiles := map[string]string{
+		"2026-spring": "./internal/store/json/sections/2026-spring.json",
 		"2025-fall":   "./internal/store/json/sections/2025-fall.json",
 		"2025-summer": "./internal/store/json/sections/2025-summer.json",
 		"2025-spring": "./internal/store/json/sections/2025-spring.json",
