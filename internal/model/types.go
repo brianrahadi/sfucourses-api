@@ -1,5 +1,7 @@
 package model
 
+import "encoding/json"
+
 // CourseOutline represents the general information about a course
 // @Description Course outline information including general details and offerings
 type CourseOutline struct {
@@ -125,19 +127,6 @@ type AllCourseOutlinesResponse struct {
 	NextURL    string          `json:"next_url,omitempty" example:"/v1/rest/outlines?limit=100&offset=50" description:"URL for the next page of results"`
 }
 
-// ProfessorSummary represents summary review data for a professor
-// @Description Summary review information for a professor
-type ProfessorSummary struct {
-	ProfessorID    string  `json:"professor_id" example:"2865715" description:"RateMyProfessors professor ID"`
-	Name           string  `json:"name" example:"Carman Fung" description:"Professor's name"`
-	Department     string  `json:"department" example:"Gender Studies" description:"Department name"`
-	Quality        float64 `json:"quality" example:"3.1" description:"Overall quality rating"`
-	Difficulty     float64 `json:"difficulty" example:"3.6" description:"Difficulty rating"`
-	Ratings        int     `json:"ratings" example:"14" description:"Total number of ratings"`
-	WouldTakeAgain string  `json:"would_take_again" example:"50%" description:"Percentage who would take again"`
-	URL            string  `json:"url" example:"https://www.ratemyprofessors.com/professor/2865715" description:"RateMyProfessors URL"`
-}
-
 // ReviewMetadata represents metadata for a review
 // @Description Review metadata information
 type ReviewMetadata struct {
@@ -152,14 +141,14 @@ type ReviewMetadata struct {
 // Review represents a detailed review
 // @Description Detailed review information
 type Review struct {
-	Rating     string         `json:"rating" example:"4.0" description:"Review rating"`
-	Difficulty string         `json:"difficulty" example:"3.0" description:"Difficulty rating"`
+	Rating     json.Number    `json:"rating" example:"4.0" description:"Review rating"`
+	Difficulty json.Number    `json:"difficulty" example:"3.0" description:"Difficulty rating"`
 	CourseCode string         `json:"course_code" example:"BUS251" description:"Course code"`
 	Date       string         `json:"date" example:"Sep 1st, 2020" description:"Review date"`
 	Metadata   ReviewMetadata `json:"metadata" description:"Review metadata"`
 	ReviewMsg  string         `json:"review_msg" example:"Great professor!" description:"Review message"`
-	Helpful    string         `json:"helpful" example:"5" description:"Number of helpful votes"`
-	NotHelpful string         `json:"not_helpful" example:"1" description:"Number of not helpful votes"`
+	Helpful    json.Number    `json:"helpful" example:"5" description:"Number of helpful votes"`
+	NotHelpful json.Number    `json:"not_helpful" example:"1" description:"Number of not helpful votes"`
 	Tags       []string       `json:"tags" example:"clear grading criteria,participation matters" description:"Review tags"`
 }
 
@@ -179,13 +168,14 @@ type InstructorReviewData struct {
 // InstructorSummary represents a summary of instructor reviews
 // @Description Summary information for an instructor
 type InstructorSummary struct {
-	ProfessorID    string  `json:"professor_id" example:"2326813" description:"RateMyProfessors professor ID"`
-	ProfessorName  string  `json:"professor_name" example:"Angela Lin" description:"Professor's name"`
-	Department     string  `json:"department" example:"Accounting" description:"Department name"`
-	AvgRating      float64 `json:"avg_rating" example:"4.2" description:"Average rating"`
-	AvgDifficulty  float64 `json:"avg_difficulty" example:"3.5" description:"Average difficulty"`
-	ReviewCount    int     `json:"review_count" example:"13" description:"Number of reviews"`
-	WouldTakeAgain string  `json:"would_take_again" example:"85%" description:"Percentage who would take again"`
+	ProfessorID    string   `json:"professor_id" example:"2326813" description:"RateMyProfessors professor ID"`
+	ProfessorName  string   `json:"professor_name" example:"Angela Lin" description:"Professor's name"`
+	Department     string   `json:"department" example:"Accounting" description:"Department name"`
+	AvgRating      float64  `json:"avg_rating" example:"4.2" description:"Average rating"`
+	AvgDifficulty  float64  `json:"avg_difficulty" example:"3.5" description:"Average difficulty"`
+	ReviewCount    int      `json:"review_count" example:"13" description:"Number of reviews"`
+	WouldTakeAgain string   `json:"would_take_again" example:"85%" description:"Percentage who would take again"`
+	Reviews        []Review `json:"reviews" description:"List of detailed reviews"`
 }
 
 // CourseReviewData represents course-level review data
@@ -194,4 +184,16 @@ type CourseReviewData struct {
 	CourseCode   string              `json:"course_code" example:"BUS251" description:"Course code"`
 	TotalReviews int                 `json:"total_reviews" example:"25" description:"Total number of reviews"`
 	Instructors  []InstructorSummary `json:"instructors" description:"List of instructors who taught this course"`
+}
+
+// ProfessorSummary represents summary review data for a professor
+// @Description Summary review information for a professor from reviews.json
+type ProfessorSummary struct {
+	URL            string `json:"URL" example:"https://www.ratemyprofessors.com/professor/2865715" description:"RateMyProfessors URL"`
+	Quality        string `json:"Quality" example:"3.1" description:"Overall quality rating"`
+	Ratings        string `json:"Ratings" example:"14" description:"Total number of ratings"`
+	Name           string `json:"Name" example:"Carman Fung" description:"Professor's name"`
+	WouldTakeAgain string `json:"WouldTakeAgain" example:"50%" description:"Percentage who would take again"`
+	Difficulty     string `json:"Difficulty" example:"3.6" description:"Difficulty rating"`
+	Department     string `json:"Department" example:"Gender Studies" description:"Department name"`
 }

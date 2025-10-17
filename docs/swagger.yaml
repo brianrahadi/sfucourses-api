@@ -201,8 +201,37 @@ definitions:
       review_count:
         example: 13
         type: integer
+      reviews:
+        items:
+          $ref: '#/definitions/model.Review'
+        type: array
       would_take_again:
         example: 85%
+        type: string
+    type: object
+  model.ProfessorSummary:
+    description: Summary review information for a professor from reviews.json
+    properties:
+      Department:
+        example: Gender Studies
+        type: string
+      Difficulty:
+        example: "3.6"
+        type: string
+      Name:
+        example: Carman Fung
+        type: string
+      Quality:
+        example: "3.1"
+        type: string
+      Ratings:
+        example: "14"
+        type: string
+      URL:
+        example: https://www.ratemyprofessors.com/professor/2865715
+        type: string
+      WouldTakeAgain:
+        example: 50%
         type: string
     type: object
   model.Review:
@@ -215,19 +244,19 @@ definitions:
         example: Sep 1st, 2020
         type: string
       difficulty:
-        example: "3.0"
-        type: string
+        example: 3
+        type: number
       helpful:
-        example: "5"
-        type: string
+        example: 5
+        type: integer
       metadata:
         $ref: '#/definitions/model.ReviewMetadata'
       not_helpful:
-        example: "1"
-        type: string
+        example: 1
+        type: integer
       rating:
-        example: "4.0"
-        type: string
+        example: 4
+        type: number
       review_msg:
         example: Great professor!
         type: string
@@ -411,15 +440,16 @@ paths:
     get:
       consumes:
       - application/json
-      description: Returns overview of all available instructor review data
+      description: Returns summary review data for all professors from reviews.json
       produces:
       - application/json
       responses:
         "200":
-          description: Overview of available review data
+          description: List of professor summaries
           schema:
-            additionalProperties: true
-            type: object
+            items:
+              $ref: '#/definitions/model.ProfessorSummary'
+            type: array
         "500":
           description: Internal server error
           schema:
@@ -431,9 +461,9 @@ paths:
     get:
       consumes:
       - application/json
-      description: Retrieves aggregated review data for a specific course code
+      description: Retrieves precomputed review data for a specific course code
       parameters:
-      - description: Course code (e.g., BUS251, CMPT225)
+      - description: Course code (e.g., CMPT353, BUS251)
         in: path
         name: course_code
         type: string

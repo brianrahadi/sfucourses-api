@@ -153,7 +153,7 @@ const docTemplate = `{
         },
         "/v1/rest/reviews": {
             "get": {
-                "description": "Returns overview of all available instructor review data",
+                "description": "Returns summary review data for all professors from reviews.json",
                 "consumes": [
                     "application/json"
                 ],
@@ -166,10 +166,12 @@ const docTemplate = `{
                 "summary": "Get all reviews overview",
                 "responses": {
                     "200": {
-                        "description": "Overview of available review data",
+                        "description": "List of professor summaries",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.ProfessorSummary"
+                            }
                         }
                     },
                     "500": {
@@ -183,7 +185,7 @@ const docTemplate = `{
         },
         "/v1/rest/reviews/courses/{course_code}": {
             "get": {
-                "description": "Retrieves aggregated review data for a specific course code",
+                "description": "Retrieves precomputed review data for a specific course code",
                 "consumes": [
                     "application/json"
                 ],
@@ -197,7 +199,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Course code (e.g., BUS251, CMPT225)",
+                        "description": "Course code (e.g., CMPT353, BUS251)",
                         "name": "course_code",
                         "in": "path"
                     }
@@ -615,9 +617,49 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 13
                 },
+                "reviews": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Review"
+                    }
+                },
                 "would_take_again": {
                     "type": "string",
                     "example": "85%"
+                }
+            }
+        },
+        "model.ProfessorSummary": {
+            "description": "Summary review information for a professor from reviews.json",
+            "type": "object",
+            "properties": {
+                "Department": {
+                    "type": "string",
+                    "example": "Gender Studies"
+                },
+                "Difficulty": {
+                    "type": "string",
+                    "example": "3.6"
+                },
+                "Name": {
+                    "type": "string",
+                    "example": "Carman Fung"
+                },
+                "Quality": {
+                    "type": "string",
+                    "example": "3.1"
+                },
+                "Ratings": {
+                    "type": "string",
+                    "example": "14"
+                },
+                "URL": {
+                    "type": "string",
+                    "example": "https://www.ratemyprofessors.com/professor/2865715"
+                },
+                "WouldTakeAgain": {
+                    "type": "string",
+                    "example": "50%"
                 }
             }
         },
@@ -634,23 +676,23 @@ const docTemplate = `{
                     "example": "Sep 1st, 2020"
                 },
                 "difficulty": {
-                    "type": "string",
-                    "example": "3.0"
+                    "type": "number",
+                    "example": 3
                 },
                 "helpful": {
-                    "type": "string",
-                    "example": "5"
+                    "type": "integer",
+                    "example": 5
                 },
                 "metadata": {
                     "$ref": "#/definitions/model.ReviewMetadata"
                 },
                 "not_helpful": {
-                    "type": "string",
-                    "example": "1"
+                    "type": "integer",
+                    "example": 1
                 },
                 "rating": {
-                    "type": "string",
-                    "example": "4.0"
+                    "type": "number",
+                    "example": 4
                 },
                 "review_msg": {
                     "type": "string",
