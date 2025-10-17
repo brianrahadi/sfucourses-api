@@ -77,6 +77,20 @@ definitions:
         example: "3"
         type: string
     type: object
+  model.CourseReviewData:
+    description: Course review data aggregated from instructors
+    properties:
+      course_code:
+        example: BUS251
+        type: string
+      instructors:
+        items:
+          $ref: '#/definitions/model.InstructorSummary'
+        type: array
+      total_reviews:
+        example: 25
+        type: integer
+    type: object
   model.CourseWithSectionDetails:
     description: Course with detailed section information
     properties:
@@ -136,6 +150,116 @@ definitions:
         items:
           $ref: '#/definitions/model.InstructorOffering'
         type: array
+    type: object
+  model.InstructorReviewData:
+    description: Instructor review data from RateMyProfessors
+    properties:
+      department:
+        example: Accounting department
+        type: string
+      difficulty_level:
+        example: "3.5"
+        type: string
+      overall_rating:
+        example: "4.2"
+        type: string
+      professor_id:
+        example: "2326813"
+        type: string
+      professor_name:
+        example: Angela Lin
+        type: string
+      reviews:
+        items:
+          $ref: '#/definitions/model.Review'
+        type: array
+      total_ratings:
+        example: "13"
+        type: string
+      would_take_again:
+        example: "85"
+        type: string
+    type: object
+  model.InstructorSummary:
+    description: Summary information for an instructor
+    properties:
+      avg_difficulty:
+        example: 3.5
+        type: number
+      avg_rating:
+        example: 4.2
+        type: number
+      department:
+        example: Accounting
+        type: string
+      professor_id:
+        example: "2326813"
+        type: string
+      professor_name:
+        example: Angela Lin
+        type: string
+      review_count:
+        example: 13
+        type: integer
+      would_take_again:
+        example: 85%
+        type: string
+    type: object
+  model.Review:
+    description: Detailed review information
+    properties:
+      course_code:
+        example: BUS251
+        type: string
+      date:
+        example: Sep 1st, 2020
+        type: string
+      difficulty:
+        example: "3.0"
+        type: string
+      helpful:
+        example: "5"
+        type: string
+      metadata:
+        $ref: '#/definitions/model.ReviewMetadata'
+      not_helpful:
+        example: "1"
+        type: string
+      rating:
+        example: "4.0"
+        type: string
+      review_msg:
+        example: Great professor!
+        type: string
+      tags:
+        example:
+        - clear grading criteria
+        - participation matters
+        items:
+          type: string
+        type: array
+    type: object
+  model.ReviewMetadata:
+    description: Review metadata information
+    properties:
+      Attendance:
+        example: Mandatory
+        type: string
+      For Credit:
+        example: "Yes"
+        type: string
+      Grade:
+        example: A
+        type: string
+      Online Class:
+        example: "Yes"
+        type: string
+      Textbook:
+        example: "Yes"
+        type: string
+      Would Take Again:
+        example: "Yes"
+        type: string
     type: object
   model.SectionDetail:
     description: Detailed information about a course section
@@ -283,6 +407,82 @@ paths:
       summary: Get course outlines
       tags:
       - Outlines
+  /v1/rest/reviews:
+    get:
+      consumes:
+      - application/json
+      description: Returns overview of all available instructor review data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Overview of available review data
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get all reviews overview
+      tags:
+      - Reviews
+  /v1/rest/reviews/courses/{course_code}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves aggregated review data for a specific course code
+      parameters:
+      - description: Course code (e.g., BUS251, CMPT225)
+        in: path
+        name: course_code
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Course review data
+          schema:
+            $ref: '#/definitions/model.CourseReviewData'
+        "404":
+          description: Course not found
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get course reviews
+      tags:
+      - Reviews
+  /v1/rest/reviews/instructors/{instructor_name}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves detailed review data for a specific instructor by name
+      parameters:
+      - description: Instructor name (e.g., Angela_Lin, Angela Lin)
+        in: path
+        name: instructor_name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Instructor review data
+          schema:
+            $ref: '#/definitions/model.InstructorReviewData'
+        "404":
+          description: Instructor not found
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get instructor reviews
+      tags:
+      - Reviews
   /v1/rest/sections:
     get:
       consumes:

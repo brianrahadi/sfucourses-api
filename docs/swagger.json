@@ -146,6 +146,122 @@
                 }
             }
         },
+        "/v1/rest/reviews": {
+            "get": {
+                "description": "Returns overview of all available instructor review data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Get all reviews overview",
+                "responses": {
+                    "200": {
+                        "description": "Overview of available review data",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rest/reviews/courses/{course_code}": {
+            "get": {
+                "description": "Retrieves aggregated review data for a specific course code",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Get course reviews",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Course code (e.g., BUS251, CMPT225)",
+                        "name": "course_code",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Course review data",
+                        "schema": {
+                            "$ref": "#/definitions/model.CourseReviewData"
+                        }
+                    },
+                    "404": {
+                        "description": "Course not found",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rest/reviews/instructors/{instructor_name}": {
+            "get": {
+                "description": "Retrieves detailed review data for a specific instructor by name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Get instructor reviews",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Instructor name (e.g., Angela_Lin, Angela Lin)",
+                        "name": "instructor_name",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Instructor review data",
+                        "schema": {
+                            "$ref": "#/definitions/model.InstructorReviewData"
+                        }
+                    },
+                    "404": {
+                        "description": "Instructor not found",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/rest/sections": {
             "get": {
                 "description": "Retrieves course sections for a specific year and term, optionally filtered by department and/or course number",
@@ -322,6 +438,26 @@
                 }
             }
         },
+        "model.CourseReviewData": {
+            "description": "Course review data aggregated from instructors",
+            "type": "object",
+            "properties": {
+                "course_code": {
+                    "type": "string",
+                    "example": "BUS251"
+                },
+                "instructors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.InstructorSummary"
+                    }
+                },
+                "total_reviews": {
+                    "type": "integer",
+                    "example": 25
+                }
+            }
+        },
         "model.CourseWithSectionDetails": {
             "description": "Course with detailed section information",
             "type": "object",
@@ -403,6 +539,157 @@
                     "items": {
                         "$ref": "#/definitions/model.InstructorOffering"
                     }
+                }
+            }
+        },
+        "model.InstructorReviewData": {
+            "description": "Instructor review data from RateMyProfessors",
+            "type": "object",
+            "properties": {
+                "department": {
+                    "type": "string",
+                    "example": "Accounting department"
+                },
+                "difficulty_level": {
+                    "type": "string",
+                    "example": "3.5"
+                },
+                "overall_rating": {
+                    "type": "string",
+                    "example": "4.2"
+                },
+                "professor_id": {
+                    "type": "string",
+                    "example": "2326813"
+                },
+                "professor_name": {
+                    "type": "string",
+                    "example": "Angela Lin"
+                },
+                "reviews": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Review"
+                    }
+                },
+                "total_ratings": {
+                    "type": "string",
+                    "example": "13"
+                },
+                "would_take_again": {
+                    "type": "string",
+                    "example": "85"
+                }
+            }
+        },
+        "model.InstructorSummary": {
+            "description": "Summary information for an instructor",
+            "type": "object",
+            "properties": {
+                "avg_difficulty": {
+                    "type": "number",
+                    "example": 3.5
+                },
+                "avg_rating": {
+                    "type": "number",
+                    "example": 4.2
+                },
+                "department": {
+                    "type": "string",
+                    "example": "Accounting"
+                },
+                "professor_id": {
+                    "type": "string",
+                    "example": "2326813"
+                },
+                "professor_name": {
+                    "type": "string",
+                    "example": "Angela Lin"
+                },
+                "review_count": {
+                    "type": "integer",
+                    "example": 13
+                },
+                "would_take_again": {
+                    "type": "string",
+                    "example": "85%"
+                }
+            }
+        },
+        "model.Review": {
+            "description": "Detailed review information",
+            "type": "object",
+            "properties": {
+                "course_code": {
+                    "type": "string",
+                    "example": "BUS251"
+                },
+                "date": {
+                    "type": "string",
+                    "example": "Sep 1st, 2020"
+                },
+                "difficulty": {
+                    "type": "string",
+                    "example": "3.0"
+                },
+                "helpful": {
+                    "type": "string",
+                    "example": "5"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/model.ReviewMetadata"
+                },
+                "not_helpful": {
+                    "type": "string",
+                    "example": "1"
+                },
+                "rating": {
+                    "type": "string",
+                    "example": "4.0"
+                },
+                "review_msg": {
+                    "type": "string",
+                    "example": "Great professor!"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "clear grading criteria",
+                        "participation matters"
+                    ]
+                }
+            }
+        },
+        "model.ReviewMetadata": {
+            "description": "Review metadata information",
+            "type": "object",
+            "properties": {
+                "Attendance": {
+                    "type": "string",
+                    "example": "Mandatory"
+                },
+                "For Credit": {
+                    "type": "string",
+                    "example": "Yes"
+                },
+                "Grade": {
+                    "type": "string",
+                    "example": "A"
+                },
+                "Online Class": {
+                    "type": "string",
+                    "example": "Yes"
+                },
+                "Textbook": {
+                    "type": "string",
+                    "example": "Yes"
+                },
+                "Would Take Again": {
+                    "type": "string",
+                    "example": "Yes"
                 }
             }
         },
