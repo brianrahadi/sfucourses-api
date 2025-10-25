@@ -234,6 +234,22 @@ definitions:
         example: 50%
         type: string
     type: object
+  model.CourseSummary:
+    description: Summary review information for a course from all_course_reviews.json
+    properties:
+      course_code:
+        example: SOC225
+        type: string
+      total_reviews:
+        example: 2
+        type: integer
+      avg_rating:
+        example: 4.5
+        type: number
+      avg_difficulty:
+        example: 2.0
+        type: number
+    type: object
   model.Review:
     description: Detailed review information
     properties:
@@ -436,16 +452,16 @@ paths:
       summary: Get course outlines
       tags:
       - Outlines
-  /v1/rest/reviews:
+  /v1/rest/reviews/instructors:
     get:
       consumes:
       - application/json
-      description: Returns summary review data for all professors from reviews.json
+      description: Returns summary review data for all instructors from all_instructor_reviews.json
       produces:
       - application/json
       responses:
         "200":
-          description: List of professor summaries
+          description: List of instructor summaries
           schema:
             items:
               $ref: '#/definitions/model.ProfessorSummary'
@@ -454,7 +470,28 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/main.ErrorResponse'
-      summary: Get all reviews overview
+      summary: Get all instructor reviews overview
+      tags:
+      - Reviews
+  /v1/rest/reviews/courses:
+    get:
+      consumes:
+      - application/json
+      description: Returns summary review data for all courses from all_course_reviews.json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of course summaries
+          schema:
+            items:
+              $ref: '#/definitions/model.CourseSummary'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get all course reviews overview
       tags:
       - Reviews
   /v1/rest/reviews/courses/{course_code}:

@@ -106,8 +106,9 @@ func (app *application) mount() http.Handler {
 	mux.HandleFunc("GET /v1/rest/outlines", app.getCourseOutlines)
 	mux.HandleFunc("GET /v1/rest/sections", app.getSections)
 	mux.HandleFunc("GET /v1/rest/instructors", app.getInstructors)
-	mux.HandleFunc("GET /v1/rest/reviews", app.getAllReviews)
+	mux.HandleFunc("GET /v1/rest/reviews/instructors", app.getAllInstructorReviews)
 	mux.HandleFunc("GET /v1/rest/reviews/instructors/{instructor_name}", app.getInstructorReviews)
+	mux.HandleFunc("GET /v1/rest/reviews/courses", app.getAllCourseReviews)
 	mux.HandleFunc("GET /v1/rest/reviews/courses/{course_code}", app.getCourseReviews)
 
 	return mux

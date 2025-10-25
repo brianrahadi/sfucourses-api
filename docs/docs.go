@@ -151,9 +151,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/rest/reviews": {
+        "/v1/rest/reviews/instructors": {
             "get": {
-                "description": "Returns summary review data for all professors from reviews.json",
+                "description": "Returns summary review data for all instructors from all_instructor_reviews.json",
                 "consumes": [
                     "application/json"
                 ],
@@ -163,14 +163,46 @@ const docTemplate = `{
                 "tags": [
                     "Reviews"
                 ],
-                "summary": "Get all reviews overview",
+                "summary": "Get all instructor reviews overview",
                 "responses": {
                     "200": {
-                        "description": "List of professor summaries",
+                        "description": "List of instructor summaries",
                         "schema": {
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/model.ProfessorSummary"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rest/reviews/courses": {
+            "get": {
+                "description": "Returns summary review data for all courses from all_course_reviews.json",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Get all course reviews overview",
+                "responses": {
+                    "200": {
+                        "description": "List of course summaries",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.CourseSummary"
                             }
                         }
                     },
@@ -660,6 +692,28 @@ const docTemplate = `{
                 "WouldTakeAgain": {
                     "type": "string",
                     "example": "50%"
+                }
+            }
+        },
+        "model.CourseSummary": {
+            "description": "Summary review information for a course from all_course_reviews.json",
+            "type": "object",
+            "properties": {
+                "course_code": {
+                    "type": "string",
+                    "example": "SOC225"
+                },
+                "total_reviews": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "avg_rating": {
+                    "type": "number",
+                    "example": 4.5
+                },
+                "avg_difficulty": {
+                    "type": "number",
+                    "example": 2.0
                 }
             }
         },

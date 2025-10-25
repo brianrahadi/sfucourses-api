@@ -13,7 +13,8 @@ import (
 
 const instructorReviewDataDir = "internal/store/json/instructor_reviews"
 const courseReviewDataDir = "internal/store/json/course_reviews"
-const reviewsSummaryFile = "internal/store/json/reviews.json"
+const allInstructorReviewsFile = "internal/store/json/all_instructor_reviews.json"
+const allCourseReviewsFile = "internal/store/json/all_course_reviews.json"
 
 // normalizeName converts a name to match the file naming convention
 func normalizeName(name string) string {
@@ -151,17 +152,17 @@ func findAllCourseFiles(courseCode string) ([]string, error) {
 	return matchingFiles, nil
 }
 
-// @Summary		Get all reviews overview
-// @Description	Returns summary review data for all professors from reviews.json
+// @Summary		Get all instructor reviews overview
+// @Description	Returns summary review data for all instructors
 // @Tags			Reviews
 // @Accept			json
 // @Produce		json
-// @Success		200	{array}		model.ProfessorSummary	"List of professor summaries"
+// @Success		200	{array}		model.ProfessorSummary	"List of instructor summaries"
 // @Failure		500	{object}	ErrorResponse			"Internal server error"
-// @Router			/v1/rest/reviews [get]
-func (app *application) getAllReviews(w http.ResponseWriter, r *http.Request) {
-	// Read and parse the reviews.json file
-	data, err := os.ReadFile(reviewsSummaryFile)
+// @Router			/v1/rest/reviews/instructors [get]
+func (app *application) getAllInstructorReviews(w http.ResponseWriter, r *http.Request) {
+	// Read and parse the all_instructor_reviews.json file
+	data, err := os.ReadFile(allInstructorReviewsFile)
 	if err != nil {
 		app.internalServerError(w, r, err)
 		return
@@ -288,6 +289,34 @@ func (app *application) getCourseReviews(w http.ResponseWriter, r *http.Request)
 	aggregatedData.TotalReviews = totalReviews
 
 	if err := writeJSON(w, http.StatusOK, aggregatedData); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+}
+
+// @Summary		Get all course reviews overview
+// @Description	Returns summary review data for all courses
+// @Tags			Reviews
+// @Accept			json
+// @Produce		json
+// @Success		200	{array}		model.CourseSummary	"List of course summaries"
+// @Failure		500	{object}	ErrorResponse		"Internal server error"
+// @Router			/v1/rest/reviews/courses [get]
+func (app *application) getAllCourseReviews(w http.ResponseWriter, r *http.Request) {
+	// Read and parse the all_course_reviews.json file
+	data, err := os.ReadFile(allCourseReviewsFile)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	var summaries []model.CourseSummary
+	if err := json.Unmarshal(data, &summaries); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := writeJSON(w, http.StatusOK, summaries); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
