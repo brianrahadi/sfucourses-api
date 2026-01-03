@@ -10,6 +10,7 @@ import (
 	"time"
 
 	. "github.com/brianrahadi/sfucourses-api/internal/model"
+	"github.com/brianrahadi/sfucourses-api/internal/utils"
 	"github.com/samber/lo"
 )
 
@@ -36,16 +37,7 @@ func (s *SectionsStore) ForceReload() error {
 }
 
 func (s *SectionsStore) loadSections() error {
-	// Define the schedule files
-	scheduleFiles := map[string]string{
-		"2026-spring": "./internal/store/json/sections/2026-spring.json",
-		"2025-fall":   "./internal/store/json/sections/2025-fall.json",
-		"2025-summer": "./internal/store/json/sections/2025-summer.json",
-		"2025-spring": "./internal/store/json/sections/2025-spring.json",
-		"2024-fall":   "./internal/store/json/sections/2024-fall.json",
-		"2024-summer": "./internal/store/json/sections/2024-summer.json",
-		"2024-spring": "./internal/store/json/sections/2024-spring.json",
-	}
+	scheduleFiles := utils.GetSectionFilePaths()
 
 	newSections := make(map[string][]CourseWithSectionDetails)
 
