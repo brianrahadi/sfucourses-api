@@ -19,6 +19,15 @@ type CourseOutline struct {
 	Offerings      []CourseOffering `json:"offerings" description:"List of term offerings for this course"`
 }
 
+// ShortCourseOutline represents a brief overview of a course
+// @Description Short course outline information containing only department, number, title, and units
+type ShortCourseOutline struct {
+	Dept   string `json:"dept" example:"CMPT" description:"Department code"`
+	Number string `json:"number" example:"225" description:"Course number"`
+	Title  string `json:"title" example:"Data Structures and Programming" description:"Course title"`
+	Units  string `json:"units" example:"3" description:"Number of credit units"`
+}
+
 // CourseWithSectionDetails represents a course with its section details
 // @Description Course with detailed section information
 type CourseWithSectionDetails struct {
