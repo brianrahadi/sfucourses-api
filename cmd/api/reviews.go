@@ -70,36 +70,24 @@ func findInstructorFile(instructorName string) (string, error) {
 
 // findCourseFile searches for a course file across all departments
 func findCourseFile(courseCode string) (string, error) {
-	// Try different variations of the course code
 	variations := []string{
 		normalizeCourseCode(courseCode),
 		strings.ToUpper(courseCode),
 		strings.ToLower(courseCode),
 	}
 
-	// Try to find the file by checking each department
-	departments, err := os.ReadDir(courseReviewDataDir)
+	entries, err := os.ReadDir(courseReviewDataDir)
 	if err != nil {
 		return "", err
 	}
 
-	for _, dept := range departments {
-		if dept.IsDir() {
-			deptPath := filepath.Join(courseReviewDataDir, dept.Name())
-			files, err := os.ReadDir(deptPath)
-			if err != nil {
-				continue
-			}
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".json") {
+			filename := strings.TrimSuffix(entry.Name(), ".json")
 
-			for _, file := range files {
-				if !file.IsDir() && strings.HasSuffix(file.Name(), ".json") {
-					filename := strings.TrimSuffix(file.Name(), ".json")
-
-					for _, variation := range variations {
-						if strings.EqualFold(filename, variation) {
-							return filepath.Join(deptPath, file.Name()), nil
-						}
-					}
+			for _, variation := range variations {
+				if strings.EqualFold(filename, variation) {
+					return filepath.Join(courseReviewDataDir, entry.Name()), nil
 				}
 			}
 		}
@@ -111,7 +99,6 @@ func findCourseFile(courseCode string) (string, error) {
 // findAllCourseFiles searches for all course JSON files matching the course code across all department directories.
 // It returns all matching files to allow for data aggregation.
 func findAllCourseFiles(courseCode string) ([]string, error) {
-	// Try different variations of the course code
 	variations := []string{
 		normalizeCourseCode(courseCode),
 		strings.ToUpper(courseCode),
@@ -120,30 +107,19 @@ func findAllCourseFiles(courseCode string) ([]string, error) {
 
 	var matchingFiles []string
 
-	// Try to find all matching files by checking each department
-	departments, err := os.ReadDir(courseReviewDataDir)
+	entries, err := os.ReadDir(courseReviewDataDir)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, dept := range departments {
-		if dept.IsDir() {
-			deptPath := filepath.Join(courseReviewDataDir, dept.Name())
-			files, err := os.ReadDir(deptPath)
-			if err != nil {
-				continue
-			}
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".json") {
+			filename := strings.TrimSuffix(entry.Name(), ".json")
 
-			for _, file := range files {
-				if !file.IsDir() && strings.HasSuffix(file.Name(), ".json") {
-					filename := strings.TrimSuffix(file.Name(), ".json")
-
-					for _, variation := range variations {
-						if strings.EqualFold(filename, variation) {
-							matchingFiles = append(matchingFiles, filepath.Join(deptPath, file.Name()))
-							break // Found a match for this file, no need to check other variations
-						}
-					}
+			for _, variation := range variations {
+				if strings.EqualFold(filename, variation) {
+					matchingFiles = append(matchingFiles, filepath.Join(courseReviewDataDir, entry.Name()))
+					break
 				}
 			}
 		}
