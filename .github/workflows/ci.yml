@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main, andy/parsed-prereqs]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "1.23"
+
+      - name: Run tests
+        id: test
+        run: |
+          set +e
+          output=$(go test ./... -v -count=1 2>&1)
+          exit_code=$?
+          set -e
+
+          echo "$output"
+
+          passed=$(echo "$output" | grep -c "^--- PASS" || true)
+          failed=$(echo "$output" | grep -c "^--- FAIL" || true)
+          total=$((passed + failed))
+
+          echo ""
+          echo "=============================="
+          echo "  Test Summary"
+          echo "=============================="
+          echo "  Total:  $total"
+          echo "  Passed: $passed"
+          echo "  Failed: $failed"
+          echo "=============================="
+
+          if [ $exit_code -ne 0 ]; then
+            echo "  Result: FAILED"
+          else
+            echo "  Result: PASSED"
+          fi
+          echo "=============================="
+
+          exit $exit_code
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build Docker image
+        run: docker build -t sfu-courses-api .
+
+      - name: Verify image exists
+        run: docker image inspect sfu-courses-api
