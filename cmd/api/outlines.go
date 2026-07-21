@@ -18,6 +18,7 @@ import (
 // @Param			number	query		string				false	"Course number (e.g., 120, 225)"
 // @Param			short	query		bool				false	"Return short outline with only dept, number, title, and units"
 // @Param			SHORT	query		bool				false	"Return short outline with only dept, number, title, and units"
+// @Param			prereqs	query		bool				false	"Include parsed prerequisite expression trees"
 // @Success		200		{array}		model.CourseOutline	"List of course outlines"
 // @Failure		404		{object}	ErrorResponse		"No outlines found for the specified criteria"
 // @Failure		500		{object}	ErrorResponse		"Internal server error"
@@ -28,6 +29,7 @@ func (app *application) getCourseOutlines(w http.ResponseWriter, r *http.Request
 	number := r.URL.Query().Get("number")
 	
 	isShort := strings.ToLower(r.URL.Query().Get("short")) == "true" || strings.ToLower(r.URL.Query().Get("SHORT")) == "true"
+	includePrereqs := strings.ToLower(r.URL.Query().Get("prereqs")) == "true"
 
 	outlines, err := app.store.Outlines.Get(ctx, dept, number)
 	if err != nil {
@@ -51,6 +53,21 @@ func (app *application) getCourseOutlines(w http.ResponseWriter, r *http.Request
 			})
 		}
 		writeJSON(w, http.StatusOK, shortOutlines)
+		return
+	}
+
+	if includePrereqs {
+		prereqMap := app.store.Outlines.GetPrereqMap()
+		result := make([]model.CourseOutlineWithPrereqs, 0, len(outlines))
+		for _, o := range outlines {
+			code := o.Dept + " " + o.Number
+			entry := model.CourseOutlineWithPrereqs{CourseOutline: o}
+			if node, ok := prereqMap[code]; ok {
+				entry.ParsedPrerequisites = &node
+			}
+			result = append(result, entry)
+		}
+		writeJSON(w, http.StatusOK, result)
 		return
 	}
 
