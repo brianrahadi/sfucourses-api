@@ -10,11 +10,13 @@ import (
 	"time"
 
 	. "github.com/brianrahadi/sfucourses-api/internal/model"
+	"github.com/brianrahadi/sfucourses-api/internal/prereq"
 	"github.com/samber/lo"
 )
 
 type OutlineStore struct {
 	cachedOutlines []CourseOutline
+	parsedPrereqs  PrereqMap
 	lastLoaded     time.Time
 	mu             sync.RWMutex
 	filePath       string
@@ -49,6 +51,7 @@ func (s *OutlineStore) loadOutlines() error {
 
 	s.mu.Lock()
 	s.cachedOutlines = outlines
+	s.parsedPrereqs = prereq.ParseAll(outlines)
 	s.lastLoaded = time.Now()
 	s.mu.Unlock()
 
@@ -98,4 +101,10 @@ func (s *OutlineStore) Get(ctx context.Context, dept, number string) ([]CourseOu
 	}
 
 	return nil, ErrNotFound
+}
+
+func (s *OutlineStore) GetPrereqMap() PrereqMap {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.parsedPrereqs
 }
