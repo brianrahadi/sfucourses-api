@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, andy/parsed-prereqs]
   pull_request:
     branches: [main]
 
@@ -31,21 +31,19 @@ jobs:
           failed=$(echo "$output" | grep -c "^--- FAIL" || true)
           total=$((passed + failed))
 
-          echo ""
-          echo "=============================="
-          echo "  Test Summary"
-          echo "=============================="
-          echo "  Total:  $total"
-          echo "  Passed: $passed"
-          echo "  Failed: $failed"
-          echo "=============================="
-
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total  | $total |" >> $GITHUB_STEP_SUMMARY
+          echo "| Passed | $passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Failed | $failed |" >> $GITHUB_STEP_SUMMARY
           if [ $exit_code -ne 0 ]; then
-            echo "  Result: FAILED"
+            echo "| Result | **FAILED** |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "  Result: PASSED"
+            echo "| Result | **PASSED** |" >> $GITHUB_STEP_SUMMARY
           fi
-          echo "=============================="
 
           exit $exit_code
 
@@ -56,7 +54,19 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Build Docker image
-        run: docker build -t sfu-courses-api .
+        id: docker
+        run: |
+          docker build -t sfu-courses-api . 2>&1
+          image_size=$(docker image inspect sfu-courses-api --format '{{.Size}}' | awk '{printf "%.1f MB", $1/1024/1024}')
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Docker Build" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Image  | sfu-courses-api |" >> $GITHUB_STEP_SUMMARY
+          echo "| Size   | $image_size |" >> $GITHUB_STEP_SUMMARY
+          echo "| Result | **PASSED** |" >> $GITHUB_STEP_SUMMARY
 
       - name: Verify image exists
         run: docker image inspect sfu-courses-api
