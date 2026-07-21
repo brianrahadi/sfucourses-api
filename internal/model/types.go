@@ -213,5 +213,23 @@ type CourseSummary struct {
 	CourseCode    string  `json:"course_code" example:"SOC225" description:"Course code"`
 	TotalReviews  int     `json:"total_reviews" example:"2" description:"Total number of reviews"`
 	AvgRating     float64 `json:"avg_rating" example:"4.5" description:"Average rating"`
-	AvgDifficulty float64 `json:"avg_difficulty" example:"2.0" description:"Average difficulty"`
+	AvgDifficulty float64 `json:"avg_difficulty" example:"2.0" description:"Average difficulty rating"`
+}
+
+// PrereqNode represents a node in a prerequisite expression tree.
+// Type "course": a single course or special token (ID field populated).
+// Type "and"/"or": logical operator node (Children field populated).
+type PrereqNode struct {
+	Type     string       `json:"type" example:"and" description:"Node type: course, and, or"`
+	ID       string       `json:"id,omitempty" example:"CMPT 225" description:"Course code or special token (for type=course)"`
+	Children []PrereqNode `json:"children,omitempty" description:"Child nodes (for type=and/or)"`
+}
+
+// PrereqMap maps course codes to their parsed prerequisite trees.
+type PrereqMap map[string]PrereqNode
+
+// CourseOutlineWithPrereqs is a CourseOutline with parsed prerequisite data.
+type CourseOutlineWithPrereqs struct {
+	CourseOutline
+	ParsedPrerequisites *PrereqNode `json:"parsedPrerequisites,omitempty"`
 }
