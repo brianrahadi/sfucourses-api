@@ -1,7 +1,5 @@
 package model
 
-import "encoding/json"
-
 // CourseOutline represents the general information about a course
 // @Description Course outline information including general details and offerings
 type CourseOutline struct {
@@ -150,14 +148,14 @@ type ReviewMetadata struct {
 // Review represents a detailed review
 // @Description Detailed review information
 type Review struct {
-	Rating     json.Number    `json:"rating" example:"4.0" description:"Review rating"`
-	Difficulty json.Number    `json:"difficulty" example:"3.0" description:"Difficulty rating"`
+	Rating     string         `json:"rating" example:"4.0" description:"Review rating"`
+	Difficulty string         `json:"difficulty" example:"3.0" description:"Difficulty rating"`
 	CourseCode string         `json:"course_code" example:"BUS251" description:"Course code"`
 	Date       string         `json:"date" example:"Sep 1st, 2020" description:"Review date"`
 	Metadata   ReviewMetadata `json:"metadata" description:"Review metadata"`
 	ReviewMsg  string         `json:"review_msg" example:"Great professor!" description:"Review message"`
-	Helpful    json.Number    `json:"helpful" example:"5" description:"Number of helpful votes"`
-	NotHelpful json.Number    `json:"not_helpful" example:"1" description:"Number of not helpful votes"`
+	Helpful    string         `json:"helpful" example:"5" description:"Number of helpful votes"`
+	NotHelpful string         `json:"not_helpful" example:"1" description:"Number of not helpful votes"`
 	Tags       []string       `json:"tags" example:"clear grading criteria,participation matters" description:"Review tags"`
 }
 
@@ -213,5 +211,23 @@ type CourseSummary struct {
 	CourseCode    string  `json:"course_code" example:"SOC225" description:"Course code"`
 	TotalReviews  int     `json:"total_reviews" example:"2" description:"Total number of reviews"`
 	AvgRating     float64 `json:"avg_rating" example:"4.5" description:"Average rating"`
-	AvgDifficulty float64 `json:"avg_difficulty" example:"2.0" description:"Average difficulty"`
+	AvgDifficulty float64 `json:"avg_difficulty" example:"2.0" description:"Average difficulty rating"`
+}
+
+// PrereqNode represents a node in a prerequisite expression tree.
+// Type "course": a single course or special token (ID field populated).
+// Type "and"/"or": logical operator node (Children field populated).
+type PrereqNode struct {
+	Type     string       `json:"type" example:"and" description:"Node type: course, and, or"`
+	ID       string       `json:"id,omitempty" example:"CMPT 225" description:"Course code or special token (for type=course)"`
+	Children []PrereqNode `json:"children,omitempty" description:"Child nodes (for type=and/or)"`
+}
+
+// PrereqMap maps course codes to their parsed prerequisite trees.
+type PrereqMap map[string]PrereqNode
+
+// CourseOutlineWithPrereqs is a CourseOutline with parsed prerequisite data.
+type CourseOutlineWithPrereqs struct {
+	CourseOutline
+	ParsedPrerequisites *PrereqNode `json:"parsedPrerequisites,omitempty"`
 }

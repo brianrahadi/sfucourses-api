@@ -104,6 +104,7 @@ func (app *application) mount() http.Handler {
 	mux.HandleFunc("POST /update", app.manualUpdateHandler)
 
 	mux.HandleFunc("GET /v1/rest/outlines", app.getCourseOutlines)
+	mux.HandleFunc("GET /v1/rest/prerequisites", app.getPrerequisites)
 	mux.HandleFunc("GET /v1/rest/sections", app.getSections)
 	mux.HandleFunc("GET /v1/rest/instructors", app.getInstructors)
 	mux.HandleFunc("GET /v1/rest/reviews/instructors", app.getAllInstructorReviews)

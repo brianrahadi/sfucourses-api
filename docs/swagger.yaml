@@ -91,6 +91,22 @@ definitions:
         example: 25
         type: integer
     type: object
+  model.CourseSummary:
+    description: Summary review information for a course
+    properties:
+      avg_difficulty:
+        example: 2
+        type: number
+      avg_rating:
+        example: 4.5
+        type: number
+      course_code:
+        example: SOC225
+        type: string
+      total_reviews:
+        example: 2
+        type: integer
+    type: object
   model.CourseWithSectionDetails:
     description: Course with detailed section information
     properties:
@@ -209,8 +225,25 @@ definitions:
         example: 85%
         type: string
     type: object
+  model.PrereqMap:
+    additionalProperties:
+      $ref: '#/definitions/model.PrereqNode'
+    type: object
+  model.PrereqNode:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/model.PrereqNode'
+        type: array
+      id:
+        example: CMPT 225
+        type: string
+      type:
+        example: and
+        type: string
+    type: object
   model.ProfessorSummary:
-    description: Summary review information for a professor from reviews.json
+    description: Summary review information for a professor
     properties:
       Department:
         example: Gender Studies
@@ -234,22 +267,6 @@ definitions:
         example: 50%
         type: string
     type: object
-  model.CourseSummary:
-    description: Summary review information for a course from all_course_reviews.json
-    properties:
-      course_code:
-        example: SOC225
-        type: string
-      total_reviews:
-        example: 2
-        type: integer
-      avg_rating:
-        example: 4.5
-        type: number
-      avg_difficulty:
-        example: 2.0
-        type: number
-    type: object
   model.Review:
     description: Detailed review information
     properties:
@@ -260,19 +277,19 @@ definitions:
         example: Sep 1st, 2020
         type: string
       difficulty:
-        example: 3
-        type: number
+        example: "3.0"
+        type: string
       helpful:
-        example: 5
-        type: integer
+        example: "5"
+        type: string
       metadata:
         $ref: '#/definitions/model.ReviewMetadata'
       not_helpful:
-        example: 1
-        type: integer
+        example: "1"
+        type: string
       rating:
-        example: 4
-        type: number
+        example: "4.0"
+        type: string
       review_msg:
         example: Great professor!
         type: string
@@ -355,9 +372,9 @@ definitions:
 host: api.sfucourses.com
 info:
   contact: {}
-  description: Unofficial API for accessing SFU course outlines, sections, and instructors
-    robustly and used to power [sfucourses.com](https://sfucourses.com). Data is pulled
-    from [SFU Course Outlines REST API](https://www.sfu.ca/outlines/help/api.html).
+  description: Unofficial API for accessing SFU course outlines, sections, instructors,
+    and reviews robustly and used to power [sfucourses.com](https://sfucourses.com).
+    Data is pulled from [SFU Course Outlines REST API](https://www.sfu.ca/outlines/help/api.html).
     This API is not affiliated with Simon Fraser University.
   title: sfucourses API
 paths:
@@ -432,6 +449,18 @@ paths:
         in: query
         name: number
         type: string
+      - description: Return short outline with only dept, number, title, and units
+        in: query
+        name: short
+        type: boolean
+      - description: Return short outline with only dept, number, title, and units
+        in: query
+        name: SHORT
+        type: boolean
+      - description: Include parsed prerequisite expression trees
+        in: query
+        name: prereqs
+        type: boolean
       produces:
       - application/json
       responses:
@@ -452,32 +481,44 @@ paths:
       summary: Get course outlines
       tags:
       - Outlines
-  /v1/rest/reviews/instructors:
+  /v1/rest/prerequisites:
     get:
       consumes:
       - application/json
-      description: Returns summary review data for all instructors from all_instructor_reviews.json
+      description: Returns prerequisite expression trees for all courses, optionally
+        filtered by department and/or course number
+      parameters:
+      - description: Department code (e.g., cmpt, math)
+        in: query
+        name: dept
+        type: string
+      - description: Course number (e.g., 120, 225)
+        in: query
+        name: number
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: List of instructor summaries
+          description: Map of course codes to prerequisite expression trees
           schema:
-            items:
-              $ref: '#/definitions/model.ProfessorSummary'
-            type: array
+            $ref: '#/definitions/model.PrereqMap'
+        "404":
+          description: No prerequisites found for the specified criteria
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
         "500":
           description: Internal server error
           schema:
             $ref: '#/definitions/main.ErrorResponse'
-      summary: Get all instructor reviews overview
+      summary: Get parsed course prerequisites
       tags:
-      - Reviews
+      - Prerequisites
   /v1/rest/reviews/courses:
     get:
       consumes:
       - application/json
-      description: Returns summary review data for all courses from all_course_reviews.json
+      description: Returns summary review data for all courses
       produces:
       - application/json
       responses:
@@ -520,6 +561,27 @@ paths:
           schema:
             $ref: '#/definitions/main.ErrorResponse'
       summary: Get course reviews
+      tags:
+      - Reviews
+  /v1/rest/reviews/instructors:
+    get:
+      consumes:
+      - application/json
+      description: Returns summary review data for all instructors
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of instructor summaries
+          schema:
+            items:
+              $ref: '#/definitions/model.ProfessorSummary'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get all instructor reviews overview
       tags:
       - Reviews
   /v1/rest/reviews/instructors/{instructor_name}:
