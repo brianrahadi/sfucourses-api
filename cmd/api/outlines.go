@@ -17,7 +17,6 @@ import (
 // @Param			dept	query		string				false	"Department code (e.g., cmpt, math)"
 // @Param			number	query		string				false	"Course number (e.g., 120, 225)"
 // @Param			short	query		bool				false	"Return short outline with only dept, number, title, and units"
-// @Param			SHORT	query		bool				false	"Return short outline with only dept, number, title, and units"
 // @Param			prereqs	query		bool				false	"Include parsed prerequisite expression trees"
 // @Success		200		{array}		model.CourseOutline	"List of course outlines"
 // @Failure		404		{object}	ErrorResponse		"No outlines found for the specified criteria"
