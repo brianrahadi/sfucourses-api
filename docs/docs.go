@@ -124,6 +124,24 @@ const docTemplate = `{
                         "description": "Course number (e.g., 120, 225)",
                         "name": "number",
                         "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Return short outline with only dept, number, title, and units",
+                        "name": "short",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Return short outline with only dept, number, title, and units",
+                        "name": "SHORT",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Include parsed prerequisite expression trees",
+                        "name": "prereqs",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -151,9 +169,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/rest/reviews/instructors": {
+        "/v1/rest/prerequisites": {
             "get": {
-                "description": "Returns summary review data for all instructors from all_instructor_reviews.json",
+                "description": "Returns prerequisite expression trees for all courses, optionally filtered by department and/or course number",
                 "consumes": [
                     "application/json"
                 ],
@@ -161,17 +179,34 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Reviews"
+                    "Prerequisites"
                 ],
-                "summary": "Get all instructor reviews overview",
+                "summary": "Get parsed course prerequisites",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Department code (e.g., cmpt, math)",
+                        "name": "dept",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Course number (e.g., 120, 225)",
+                        "name": "number",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of instructor summaries",
+                        "description": "Map of course codes to prerequisite expression trees",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.ProfessorSummary"
-                            }
+                            "$ref": "#/definitions/model.PrereqMap"
+                        }
+                    },
+                    "404": {
+                        "description": "No prerequisites found for the specified criteria",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
                         }
                     },
                     "500": {
@@ -185,7 +220,7 @@ const docTemplate = `{
         },
         "/v1/rest/reviews/courses": {
             "get": {
-                "description": "Returns summary review data for all courses from all_course_reviews.json",
+                "description": "Returns summary review data for all courses",
                 "consumes": [
                     "application/json"
                 ],
@@ -247,6 +282,38 @@ const docTemplate = `{
                         "description": "Course not found",
                         "schema": {
                             "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/main.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rest/reviews/instructors": {
+            "get": {
+                "description": "Returns summary review data for all instructors",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Get all instructor reviews overview",
+                "responses": {
+                    "200": {
+                        "description": "List of instructor summaries",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.ProfessorSummary"
+                            }
                         }
                     },
                     "500": {
@@ -497,6 +564,28 @@ const docTemplate = `{
                 }
             }
         },
+        "model.CourseSummary": {
+            "description": "Summary review information for a course",
+            "type": "object",
+            "properties": {
+                "avg_difficulty": {
+                    "type": "number",
+                    "example": 2
+                },
+                "avg_rating": {
+                    "type": "number",
+                    "example": 4.5
+                },
+                "course_code": {
+                    "type": "string",
+                    "example": "SOC225"
+                },
+                "total_reviews": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
         "model.CourseWithSectionDetails": {
             "description": "Course with detailed section information",
             "type": "object",
@@ -661,8 +750,33 @@ const docTemplate = `{
                 }
             }
         },
+        "model.PrereqMap": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/model.PrereqNode"
+            }
+        },
+        "model.PrereqNode": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.PrereqNode"
+                    }
+                },
+                "id": {
+                    "type": "string",
+                    "example": "CMPT 225"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "and"
+                }
+            }
+        },
         "model.ProfessorSummary": {
-            "description": "Summary review information for a professor from reviews.json",
+            "description": "Summary review information for a professor",
             "type": "object",
             "properties": {
                 "Department": {
@@ -695,28 +809,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.CourseSummary": {
-            "description": "Summary review information for a course from all_course_reviews.json",
-            "type": "object",
-            "properties": {
-                "course_code": {
-                    "type": "string",
-                    "example": "SOC225"
-                },
-                "total_reviews": {
-                    "type": "integer",
-                    "example": 2
-                },
-                "avg_rating": {
-                    "type": "number",
-                    "example": 4.5
-                },
-                "avg_difficulty": {
-                    "type": "number",
-                    "example": 2.0
-                }
-            }
-        },
         "model.Review": {
             "description": "Detailed review information",
             "type": "object",
@@ -730,23 +822,23 @@ const docTemplate = `{
                     "example": "Sep 1st, 2020"
                 },
                 "difficulty": {
-                    "type": "number",
-                    "example": 3
+                    "type": "string",
+                    "example": "3.0"
                 },
                 "helpful": {
-                    "type": "integer",
-                    "example": 5
+                    "type": "string",
+                    "example": "5"
                 },
                 "metadata": {
                     "$ref": "#/definitions/model.ReviewMetadata"
                 },
                 "not_helpful": {
-                    "type": "integer",
-                    "example": 1
+                    "type": "string",
+                    "example": "1"
                 },
                 "rating": {
-                    "type": "number",
-                    "example": 4
+                    "type": "string",
+                    "example": "4.0"
                 },
                 "review_msg": {
                     "type": "string",
@@ -882,7 +974,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "",
 	Schemes:          []string{"https"},
 	Title:            "sfucourses API",
-	Description:      "Unofficial API for accessing SFU course outlines, sections, and instructors robustly and used to power [sfucourses.com](https://sfucourses.com). Data is pulled from [SFU Course Outlines REST API](https://www.sfu.ca/outlines/help/api.html). This API is not affiliated with Simon Fraser University.",
+	Description:      "Unofficial API for accessing SFU course outlines, sections, instructors, and reviews robustly and used to power [sfucourses.com](https://sfucourses.com). Data is pulled from [SFU Course Outlines REST API](https://www.sfu.ca/outlines/help/api.html). This API is not affiliated with Simon Fraser University.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

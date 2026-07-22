@@ -8,17 +8,17 @@ import (
 	"github.com/brianrahadi/sfucourses-api/internal/store"
 )
 
-// @Summary		Get parsed course prerequisites
-// @Description	Returns prerequisite expression trees for all courses, optionally filtered by department and/or course number
-// @Tags			Prerequisites
-// @Accept			json
-// @Produce		json
-// @Param			dept	query		string				false	"Department code (e.g., cmpt, math)"
-// @Param			number	query		string				false	"Course number (e.g., 120, 225)"
-// @Success		200		{object}	model.PrereqMap		"Map of course codes to prerequisite expression trees"
-// @Failure		404		{object}	ErrorResponse		"No prerequisites found for the specified criteria"
-// @Failure		500		{object}	ErrorResponse		"Internal server error"
-// @Router			/v1/rest/prerequisites [get]
+//	@Summary		Get parsed course prerequisites
+//	@Description	Returns prerequisite expression trees for all courses, optionally filtered by department and/or course number
+//	@Tags			Prerequisites
+//	@Accept			json
+//	@Produce		json
+//	@Param			dept	query		string			false	"Department code (e.g., cmpt, math)"
+//	@Param			number	query		string			false	"Course number (e.g., 120, 225)"
+//	@Success		200		{object}	model.PrereqMap	"Map of course codes to prerequisite expression trees"
+//	@Failure		404		{object}	ErrorResponse	"No prerequisites found for the specified criteria"
+//	@Failure		500		{object}	ErrorResponse	"Internal server error"
+//	@Router			/v1/rest/prerequisites [get]
 func (app *application) getPrerequisites(w http.ResponseWriter, r *http.Request) {
 	dept := r.URL.Query().Get("dept")
 	number := r.URL.Query().Get("number")
