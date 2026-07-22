@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/brianrahadi/sfucourses-api/internal/model"
+	"github.com/brianrahadi/sfucourses-api/internal/store"
 )
 
 // @Summary		Get parsed course prerequisites
@@ -15,11 +16,17 @@ import (
 // @Param			dept	query		string				false	"Department code (e.g., cmpt, math)"
 // @Param			number	query		string				false	"Course number (e.g., 120, 225)"
 // @Success		200		{object}	model.PrereqMap		"Map of course codes to prerequisite expression trees"
+// @Failure		404		{object}	ErrorResponse		"No prerequisites found for the specified criteria"
 // @Failure		500		{object}	ErrorResponse		"Internal server error"
 // @Router			/v1/rest/prerequisites [get]
 func (app *application) getPrerequisites(w http.ResponseWriter, r *http.Request) {
 	dept := r.URL.Query().Get("dept")
 	number := r.URL.Query().Get("number")
+
+	if dept == "" && number != "" {
+		app.notFoundResponse(w, r, store.ErrNotFound)
+		return
+	}
 
 	prereqMap := app.store.Outlines.GetPrereqMap()
 
@@ -49,6 +56,11 @@ func (app *application) getPrerequisites(w http.ResponseWriter, r *http.Request)
 				filtered[code] = node
 			}
 		}
+	}
+
+	if dept != "" && number != "" && len(filtered) == 0 {
+		app.notFoundResponse(w, r, store.ErrNotFound)
+		return
 	}
 
 	writeJSON(w, http.StatusOK, filtered)

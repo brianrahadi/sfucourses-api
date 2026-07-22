@@ -194,6 +194,28 @@ func TestParsePrunesProse(t *testing.T) {
 	}
 }
 
+func TestParseUnbalancedParens(t *testing.T) {
+	cases := []struct {
+		input      string
+		expectNil  bool
+	}{
+		{"(CMPT 225", false},
+		{"CMPT 225)", false},
+		{"((CMPT 225)", false},
+		{"(", true},
+		{")", true},
+	}
+	for _, c := range cases {
+		got := Parse(c.input)
+		if c.expectNil && got != nil {
+			t.Errorf("Parse(%q) = %v, want nil", c.input, got)
+		}
+		if !c.expectNil && got == nil {
+			t.Errorf("Parse(%q) returned nil, expected a node", c.input)
+		}
+	}
+}
+
 func TestParseAll(t *testing.T) {
 	outlines := []model.CourseOutline{
 		{Dept: "CMPT", Number: "300", Prerequisites: "CMPT 225"},

@@ -197,14 +197,12 @@ func (p *parser) peek() *token {
 	return &p.tokens[p.pos]
 }
 
-func (p *parser) advance() token {
-	t := p.tokens[p.pos]
+func (p *parser) advance() *token {
+	if p.pos >= len(p.tokens) {
+		return nil
+	}
+	t := &p.tokens[p.pos]
 	p.pos++
-	return t
-}
-
-func (p *parser) expect(typ tokenType) token {
-	t := p.advance()
 	return t
 }
 
@@ -289,11 +287,16 @@ func (p *parser) factor() *model.PrereqNode {
 	if t.typ == tokLParen {
 		p.advance()
 		node := p.expression()
-		p.expect(tokRParen)
+		if rt := p.peek(); rt != nil && rt.typ == tokRParen {
+			p.advance()
+		}
 		return node
 	}
 
 	tok := p.advance()
+	if tok == nil {
+		return nil
+	}
 
 	switch tok.typ {
 	case tokCourse:
