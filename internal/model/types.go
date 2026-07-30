@@ -1,5 +1,10 @@
 package model
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 // CourseOutline represents the general information about a course
 // @Description Course outline information including general details and offerings
 type CourseOutline struct {
@@ -230,4 +235,50 @@ type PrereqMap map[string]PrereqNode
 type CourseOutlineWithPrereqs struct {
 	CourseOutline
 	ParsedPrerequisites *PrereqNode `json:"parsedPrerequisites,omitempty"`
+}
+
+// UnmarshalJSON handles parsing Review when rating/difficulty are either strings or numbers
+func (r *Review) UnmarshalJSON(data []byte) error {
+	type Alias Review
+	aux := &struct {
+		Rating     any `json:"rating"`
+		Difficulty any `json:"difficulty"`
+		Helpful    any `json:"helpful"`
+		NotHelpful any `json:"not_helpful"`
+		*Alias
+	}{
+		Alias: (*Alias)(r),
+	}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	formatFloat := func(v any) string {
+		switch val := v.(type) {
+		case string:
+			return val
+		case float64:
+			return fmt.Sprintf("%.1f", val)
+		default:
+			return ""
+		}
+	}
+
+	formatInt := func(v any) string {
+		switch val := v.(type) {
+		case string:
+			return val
+		case float64:
+			return fmt.Sprintf("%.0f", val)
+		default:
+			return ""
+		}
+	}
+
+	r.Rating = formatFloat(aux.Rating)
+	r.Difficulty = formatFloat(aux.Difficulty)
+	r.Helpful = formatInt(aux.Helpful)
+	r.NotHelpful = formatInt(aux.NotHelpful)
+
+	return nil
 }

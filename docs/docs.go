@@ -133,12 +133,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "boolean",
-                        "description": "Return short outline with only dept, number, title, and units",
-                        "name": "SHORT",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
                         "description": "Include parsed prerequisite expression trees",
                         "name": "prereqs",
                         "in": "query"

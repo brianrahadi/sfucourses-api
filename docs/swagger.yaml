@@ -453,10 +453,6 @@ paths:
         in: query
         name: short
         type: boolean
-      - description: Return short outline with only dept, number, title, and units
-        in: query
-        name: SHORT
-        type: boolean
       - description: Include parsed prerequisite expression trees
         in: query
         name: prereqs
