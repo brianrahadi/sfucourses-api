@@ -25,7 +25,7 @@
 <h3 align="center">sfucourses-api</h3>
 
   <p align="center">
-    REST API server for SFU course outlines, sessions, and instructors
+    REST API server for SFU course outlines, sessions, instructors, and reviews
     <br />
     <a href="https://github.com/brianrahadi/sfucourses-api"><strong>Explore the docs »</strong></a>
     <br />
