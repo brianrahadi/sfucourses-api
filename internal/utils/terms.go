@@ -15,7 +15,7 @@ var TermCodes = []string{
 	"2026-spring",
 	"2026-summer",
 	"2026-fall",
-	"2027-spring"
+	"2027-spring",
 }
 
 // GetTermCodes returns all term codes as a slice of strings.
