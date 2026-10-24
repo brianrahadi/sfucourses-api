@@ -5,17 +5,33 @@ import re
 from collections import defaultdict
 from datetime import datetime
 
+# Real SFU course codes (e.g. CMPT105W, SA150, FALX99), from the API's own outlines data.
+OUTLINES_PATH = os.environ.get(
+    "RMP_OUTLINES",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "internal", "store", "json", "outlines.json"),
+)
+try:
+    with open(OUTLINES_PATH, encoding="utf-8") as _f:
+        SFU_COURSES = {(c["dept"] + c["number"]).upper() for c in json.load(_f)}
+except Exception as _e:
+    print(f"Warning: could not load {OUTLINES_PATH} ({_e}); using pattern check only")
+    SFU_COURSES = set()
+
+# 2-4 letter subject, 3 digits, optional suffix letter (W writing-intensive, etc.)
+COURSE_CODE_PATTERN = re.compile(r'^[A-Z]{2,4}\d{3}[A-Z]?$')
+
+
+def normalize_course_code(course_code):
+    """'cmpt 105w', 'CMPT-105W' -> 'CMPT105W' (matches the API's normalizeCourseCode)."""
+    return re.sub(r'[\s\-_./]', '', (course_code or '').upper())
+
+
 def is_valid_course_code(course_code):
-    """
-    Validate course code format: 3-4 letters followed by 3 digits
-    Examples: CS101, MATH225, ENGL101, CMPT225
-    """
+    """A real SFU course, or something shaped like one (older courses no longer in outlines).
+    Examples: CMPT225, SA150, BUS360W, FALX99"""
     if not course_code:
         return False
-    
-    # Pattern: 3-4 letters followed by 3 digits
-    pattern = r'^[A-Z]{3,4}\d{3}$'
-    return bool(re.match(pattern, course_code.upper()))
+    return course_code in SFU_COURSES or bool(COURSE_CODE_PATTERN.match(course_code))
 
 def review_sort_key(review):
     """Newest first; unparseable dates sort last."""
@@ -86,9 +102,9 @@ def parse_course_reviews():
                 continue
             
             # Normalize course code to uppercase for consistent grouping
-            course_code_upper = course_code.upper()
+            course_code_upper = normalize_course_code(course_code)
             
-            # Skip invalid course codes (must be 3-4 letters followed by 3 digits)
+            # Skip things that are not course codes (e.g. "100", "PHILXX1")
             if not is_valid_course_code(course_code_upper):
                 print(f"  Skipping invalid course code: {course_code}")
                 continue
