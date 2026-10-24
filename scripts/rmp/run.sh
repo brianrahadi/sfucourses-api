@@ -47,16 +47,20 @@ PREV_PROFS=$(count "$DATA/all_instructor_reviews.json")
 PREV_COURSES=$(count "$DATA/all_course_reviews.json")
 
 echo "== Stage 1: department listings"
+T0=$SECONDS
 "$PY" "$SCRIPTS/scrape_listings.py"
 NEW_PROFS=$(count scraped_general/ALL.json)
 echo "Professors: $PREV_PROFS -> $NEW_PROFS"
+echo "::notice title=Stage 1::$NEW_PROFS professors (was $PREV_PROFS) in $(( (SECONDS-T0)/60 ))m"
 if [ "$NEW_PROFS" -lt $((PREV_PROFS * 9 / 10)) ]; then
   echo "::error::Stage 1 found far fewer professors than before (blocked or RMP layout changed). Aborting."
   exit 1
 fi
 
 echo "== Stage 2: professor pages"
+T0=$SECONDS
 "$PY" "$SCRIPTS/scrape_reviews.py"
+echo "::notice title=Stage 2 time::$(( (SECONDS-T0)/60 ))m"
 
 echo "== Stage 3: parse reviews"
 "$PY" "$SCRIPTS/reviews_parser.py" > stage3.log
