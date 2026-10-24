@@ -17,6 +17,26 @@ except Exception as _e:
     print(f"Warning: could not load {OUTLINES_PATH} ({_e}); using pattern check only")
     SFU_COURSES = set()
 
+# Students tag the same course with or without its suffix letter (BUS360 vs BUS360W).
+# Map a non-SFU code to the one real course it clearly means.
+_SUFFIXED = defaultdict(set)
+for _c in SFU_COURSES:
+    if re.match(r'^[A-Z]{2,4}\d{3}[A-Z]$', _c):
+        _SUFFIXED[_c[:-1]].add(_c)
+
+
+def canonical_course_code(code):
+    """CMPT376 -> CMPT376W, HIST101W -> HIST101 when only that form is a real SFU course."""
+    if code in SFU_COURSES:
+        return code
+    if code[-1:].isalpha() and code[:-1] in SFU_COURSES:
+        return code[:-1]
+    options = _SUFFIXED.get(code)
+    if options and len(options) == 1:
+        return next(iter(options))
+    return code
+
+
 # 2-4 letter subject, 3 digits, optional suffix letter (W writing-intensive, etc.)
 COURSE_CODE_PATTERN = re.compile(r'^[A-Z]{2,4}\d{3}[A-Z]?$')
 
@@ -102,7 +122,7 @@ def parse_course_reviews():
                 continue
             
             # Normalize course code to uppercase for consistent grouping
-            course_code_upper = normalize_course_code(course_code)
+            course_code_upper = canonical_course_code(normalize_course_code(course_code))
             
             # Skip things that are not course codes (e.g. "100", "PHILXX1")
             if not is_valid_course_code(course_code_upper):
