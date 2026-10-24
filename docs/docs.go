@@ -452,6 +452,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2025-06-17T07:40:46Z"
                 },
+                "lastReviewUpdate": {
+                    "type": "string",
+                    "example": "2025-06-16T11:17:00Z"
+                },
                 "status": {
                     "type": "string",
                     "example": "ok"

@@ -38,6 +38,7 @@ func (app *application) healthCheckHandler(w http.ResponseWriter, r *http.Reques
 	} else if BuildTime != "" {
 		resp.LastDataUpdate = BuildTime
 	}
+	resp.LastReviewUpdate = readReviewsLastUpdated()
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
