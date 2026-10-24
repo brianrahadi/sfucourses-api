@@ -31,7 +31,7 @@ from driver import make_driver
 BASE_CUTOFF = datetime(2024, 1, 1)
 # Re-read this many days before the newest saved review, to be safe
 OVERLAP_DAYS = 45
-THREADS = int(os.environ.get("RMP_THREADS", "4"))
+THREADS = int(os.environ.get("RMP_THREADS", "6"))
 # Set RMP_FULL=1 to ignore saved data and re-fetch everyone back to BASE_CUTOFF
 FULL = os.environ.get("RMP_FULL") == "1"
 
@@ -130,23 +130,25 @@ def scrape_one(driver, dept, url, pid, cutoff):
             pass
 
     while True:
-        try:
-            driver.execute_script(
-                "document.querySelectorAll('iframe, .il-sr-info-native-copy-grey')"
-                ".forEach(function(a){a.style.display='none';});"
-            )
-            btn = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, BUTTON_XPATH)))
-            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", btn)
-            driver.execute_script("arguments[0].click();", btn)
-            time.sleep(random.uniform(1.0, 2.5))
-        except Exception:
-            break  # no more button
+        # Stop before clicking if the visible reviews already reach the cutoff
+        # (usually true on the first page for incremental runs).
         stamps = driver.find_elements(By.CSS_SELECTOR, TIMESTAMP_CSS)
         try:
             if stamps and parse_rmp_date(stamps[-1].text) < cutoff:
                 break
         except Exception:
             pass
+        try:
+            driver.execute_script(
+                "document.querySelectorAll('iframe, .il-sr-info-native-copy-grey')"
+                ".forEach(function(a){a.style.display='none';});"
+            )
+            btn = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, BUTTON_XPATH)))
+            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", btn)
+            driver.execute_script("arguments[0].click();", btn)
+            time.sleep(random.uniform(0.8, 1.5))
+        except Exception:
+            break  # no more button
 
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(driver.page_source)
@@ -182,6 +184,7 @@ def main():
     jobs = build_jobs(saved)
     print(f"{len(jobs)} professor pages to fetch (full={FULL})")
     if not jobs:
+        print("::notice title=Stage 2::nothing changed")
         return
     # Keep the same professor in one thread so duplicates are copied, not refetched.
     jobs.sort(key=lambda j: j[2])
@@ -194,6 +197,7 @@ def main():
     for t in threads:
         t.join()
     print(f"Stage 2 done: {stats}")
+    print(f"::notice title=Stage 2::{len(jobs)} pages queued, {stats}")
 
 
 if __name__ == "__main__":

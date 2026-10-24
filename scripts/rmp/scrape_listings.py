@@ -155,15 +155,18 @@ def extract_card_data(card):
 
 
 def scrape_department(driver, dept_name, dept_id):
-    wait = WebDriverWait(driver, 10)
+    wait = WebDriverWait(driver, 4)
     driver.get(BASE_URL + str(dept_id))
-    time.sleep(2)
+    try:
+        WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CSS_SELECTOR, "a[href*='/professor/']")))
+    except Exception:
+        pass
 
     while True:
         try:
             btn = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Show More')]")))
             driver.execute_script("arguments[0].click();", btn)
-            time.sleep(1)
+            time.sleep(0.7)
         except Exception:
             break
 
