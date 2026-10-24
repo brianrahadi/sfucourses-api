@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/brianrahadi/sfucourses-api/internal/model"
 )
@@ -15,6 +16,30 @@ const instructorReviewDataDir = "internal/store/json/instructor_reviews"
 const courseReviewDataDir = "internal/store/json/course_reviews"
 const allInstructorReviewsFile = "internal/store/json/all_instructor_reviews.json"
 const allCourseReviewsFile = "internal/store/json/all_course_reviews.json"
+const reviewsMetaFile = "internal/store/json/reviews_meta.json"
+
+// reviewsMeta is written by the RMP refresh workflow whenever review data changes.
+type reviewsMeta struct {
+	LastUpdated string `json:"lastUpdated"`
+}
+
+// readReviewsLastUpdated returns when review data last changed (RFC3339),
+// or "" if the metadata file is missing or invalid.
+func readReviewsLastUpdated() string {
+	data, err := os.ReadFile(reviewsMetaFile)
+	if err != nil {
+		return ""
+	}
+	var meta reviewsMeta
+	if err := json.Unmarshal(data, &meta); err != nil {
+		return ""
+	}
+	t, err := time.Parse(time.RFC3339, meta.LastUpdated)
+	if err != nil {
+		return ""
+	}
+	return t.UTC().Format(time.RFC3339)
+}
 
 // normalizeName converts a name to match the file naming convention
 func normalizeName(name string) string {

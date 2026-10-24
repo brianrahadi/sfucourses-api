@@ -49,6 +49,9 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          # Record when review data last changed (served as lastReviewUpdate on /health)
+          printf '{\n  "lastUpdated": "%s"\n}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > internal/store/json/reviews_meta.json
+          git add internal/store/json/reviews_meta.json
           git config user.name "github-actions[bot]"
           git config user.email "41898289+github-actions[bot]@users.noreply.github.com"
           files=$(git diff --cached --name-only | wc -l)

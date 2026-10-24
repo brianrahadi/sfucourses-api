@@ -13,6 +13,9 @@ definitions:
       lastDataUpdate:
         example: "2025-06-17T07:40:46Z"
         type: string
+      lastReviewUpdate:
+        example: "2025-06-16T11:17:00Z"
+        type: string
       status:
         example: ok
         type: string
