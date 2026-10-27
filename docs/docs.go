@@ -212,6 +212,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/rest/prerequisites/graph": {
+            "get": {
+                "description": "Returns one entry per course: the course codes it requires (prerequisites, and as one-of groups), may take alongside (corequisites), and can't get credit for together with it (exclusions). Parsed from the catalog and refreshed weekly from the newest SFU terms. Unit counts and permission clauses are omitted; use /v1/rest/prerequisites for the full and/or logic.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Prerequisites"
+                ],
+                "summary": "Get the course prerequisite graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Only courses in this department (e.g., cmpt)",
+                        "name": "dept",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Prerequisite graph entries",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.PrereqGraphEntry"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/rest/reviews/courses": {
             "get": {
                 "description": "Returns summary review data for all courses",
@@ -451,6 +482,10 @@ const docTemplate = `{
                 "lastDataUpdate": {
                     "type": "string",
                     "example": "2025-06-17T07:40:46Z"
+                },
+                "lastPrereqUpdate": {
+                    "type": "string",
+                    "example": "2025-06-16T11:47:00Z"
                 },
                 "lastReviewUpdate": {
                     "type": "string",
@@ -745,6 +780,61 @@ const docTemplate = `{
                 "would_take_again": {
                     "type": "string",
                     "example": "85%"
+                }
+            }
+        },
+        "model.PrereqGraphEntry": {
+            "type": "object",
+            "properties": {
+                "corequisites": {
+                    "description": "Courses that may (or must) be taken in the same term.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        ""
+                    ]
+                },
+                "dept": {
+                    "type": "string",
+                    "example": "CMPT"
+                },
+                "exclusions": {
+                    "description": "Courses SFU won't give credit for alongside this one, or that may not be\ntaken concurrently with it (from \"may not take for further credit\" notes).",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "CMPT 201"
+                    ]
+                },
+                "groups": {
+                    "description": "Prerequisites as groups that must all be met, one course from each:\n[[\"CMPT 225\"], [\"CMPT 295\", \"ENSC 254\"]].",
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "number": {
+                    "type": "string",
+                    "example": "300"
+                },
+                "prerequisites": {
+                    "description": "Every course code mentioned as a prerequisite.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "CMPT 225",
+                        "CMPT 295",
+                        "ENSC 254"
+                    ]
                 }
             }
         },

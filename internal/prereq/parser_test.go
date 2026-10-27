@@ -495,3 +495,54 @@ func TestFoundationsAndSectionLabels(t *testing.T) {
 	raw = "GEOG 251 or one of STAT 201, 203 (formerly 103), 205, or 270."
 	eqSet(t, raw, leaves(Parse(raw)), "GEOG 251", "STAT 201", "STAT 203", "STAT 103", "STAT 205", "STAT 270")
 }
+
+func TestSubstitutionSentence(t *testing.T) {
+	raw := "CMPT 225, (MACM 201 or CMPT 210), (MATH 150 or MATH 151), and (MATH 232 or MATH 240), all with a minimum grade of C-. MATH 154 or MATH 157 with a grade of at least B+ may be substituted for MATH 150 or MATH 151."
+	got := Parse(raw)
+	g := Groups(got)
+	if len(g) != 4 {
+		t.Fatalf("groups = %v, want 4", g)
+	}
+	eqSet(t, "math group", g[2], "MATH 150", "MATH 151", "MATH 154", "MATH 157")
+}
+
+func TestGroups(t *testing.T) {
+	cases := map[string][][]string{
+		"CMPT 225 and (CMPT 295 or ENSC 254)": {{"CMPT 225"}, {"CMPT 295", "ENSC 254"}},
+		"MATH 150, 151, 154 or 157":           {{"MATH 150", "MATH 151", "MATH 154", "MATH 157"}},
+		"CMPT 125":                            {{"CMPT 125"}},
+		"45 units and CMPT 225":               {{"CMPT 225"}},
+		"45 units":                            {},
+	}
+	for raw, want := range cases {
+		got := Groups(Parse(raw))
+		if len(got) != len(want) {
+			t.Errorf("%q: got %v want %v", raw, got, want)
+			continue
+		}
+		for i := range want {
+			eqSet(t, raw, got[i], want[i]...)
+		}
+	}
+}
+
+func TestExclusions(t *testing.T) {
+	cases := []struct {
+		self  string
+		texts []string
+		want  []string
+	}{
+		{"BPK 325", []string{"Students with credit for BPK 326 may not take this course for further credit."}, []string{"BPK 326"}},
+		{"BUS 753", []string{"Students with credit for BUS 511 or BUS 650 or BUS 707 may not take this course for further credit."}, []string{"BUS 511", "BUS 650", "BUS 707"}},
+		{"STAT 475", []string{"Students with credit for the former STAT 402 or 602 may not take this course for further credit."}, []string{"STAT 402", "STAT 602"}},
+		{"CRIM 370", []string{"CRIM 320 and 330. CRIM 370 and 470 may not be taken concurrently."}, []string{"CRIM 470"}},
+		{"MATH 240", []string{"An intro course.", "Students with credit for MATH 232 cannot take this course for further credit."}, []string{"MATH 232"}},
+		// sequencing and repeat notes are not exclusions
+		{"ENSC 405W", []string{"ENSC 204. Students are required to complete two co-ops before enrolling in ENSC 440."}, []string{}},
+		{"BUS 313", []string{"Students may repeat this course for further credit."}, []string{}},
+		{"CMPT 120", []string{"CMPT 120 is a first course. Students in CMPT 125 may find it useful."}, []string{}},
+	}
+	for _, c := range cases {
+		eqSet(t, c.self, Exclusions(c.self, c.texts...), c.want...)
+	}
+}

@@ -70,7 +70,7 @@ func (app *application) getPrerequisites(w http.ResponseWriter, r *http.Request)
 }
 
 // @Summary		Get the course prerequisite graph
-// @Description	Returns one entry per course with the course codes it requires (prerequisites) and may take alongside (corequisites), parsed from the catalog text. Unit counts and permission clauses are omitted; use /v1/rest/prerequisites for the full and/or logic. Refreshed weekly from the newest SFU terms.
+// @Description	Returns one entry per course: the course codes it requires (prerequisites, and as one-of groups), may take alongside (corequisites), and can't get credit for together with it (exclusions). Parsed from the catalog and refreshed weekly from the newest SFU terms. Unit counts and permission clauses are omitted; use /v1/rest/prerequisites for the full and/or logic.
 // @Tags			Prerequisites
 // @Produce		json
 // @Param			dept	query		string						false	"Only courses in this department (e.g., cmpt)"

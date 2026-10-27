@@ -280,14 +280,48 @@ type MergeResult struct {
 
 // MergeOptions controls Merge.
 type MergeOptions struct {
-	AddNew     bool // append courses missing from the file
-	AllowClear bool // let an empty upstream field erase existing text
+	AddNew     bool     // append courses missing from the file
+	AllowClear bool     // let an empty upstream field erase existing text
+	Fields     []string // fields to refresh; nil means RequirementFields
 }
 
-// Merge applies fetched requirement text to existing outlines. Only the
-// prerequisites/corequisites fields of existing courses are touched. Courses
-// that aren't in existing are appended when addNew is set. The result is
-// sorted the same way fetch-outlines writes the file.
+// RequirementFields are the fields the prerequisite graph is built from.
+var RequirementFields = []string{"prerequisites", "corequisites"}
+
+// CatalogFields are every course-level text field fetch-outlines stores. Like
+// requirement text, these are frozen at the oldest outline fetch-outlines saw.
+// Offerings, delivery method and degree level are section/term specific and
+// left to the existing scripts.
+var CatalogFields = []string{"prerequisites", "corequisites", "title", "description", "notes", "designation", "units"}
+
+// fieldPtr returns a pointer to the named field of o, or nil if unknown.
+func fieldPtr(o *model.CourseOutline, name string) *string {
+	switch name {
+	case "prerequisites":
+		return &o.Prerequisites
+	case "corequisites":
+		return &o.Corequisites
+	case "title":
+		return &o.Title
+	case "description":
+		return &o.Description
+	case "notes":
+		return &o.Notes
+	case "designation":
+		return &o.Designation
+	case "units":
+		return &o.Units
+	}
+	return nil
+}
+
+// ValidField reports whether name can be passed in MergeOptions.Fields.
+func ValidField(name string) bool { return fieldPtr(&model.CourseOutline{}, name) != nil }
+
+// Merge applies fetched catalog text to existing outlines. Only opt.Fields of
+// existing courses are touched; courses that aren't in existing are appended
+// when opt.AddNew is set. The result is sorted the same way fetch-outlines
+// writes the file.
 func Merge(existing []model.CourseOutline, fetched map[string]model.CourseOutline, opt MergeOptions) MergeResult {
 	res := MergeResult{Outlines: make([]model.CourseOutline, 0, len(existing))}
 	seen := make(map[string]bool, len(existing))
@@ -296,6 +330,9 @@ func Merge(existing []model.CourseOutline, fetched map[string]model.CourseOutlin
 		seen[key] = true
 		if f, ok := fetched[key]; ok {
 			update := func(field string, cur *string, upstream string) {
+				if cur == nil {
+					return
+				}
 				n := clean(upstream)
 				if n == clean(*cur) {
 					return
@@ -308,8 +345,15 @@ func Merge(existing []model.CourseOutline, fetched map[string]model.CourseOutlin
 				res.Changes = append(res.Changes, ch)
 				*cur = n
 			}
-			update("prerequisites", &o.Prerequisites, f.Prerequisites)
-			update("corequisites", &o.Corequisites, f.Corequisites)
+			fields := opt.Fields
+			if fields == nil {
+				fields = RequirementFields
+			}
+			for _, name := range fields {
+				if up := fieldPtr(&f, name); up != nil {
+					update(name, fieldPtr(&o, name), *up)
+				}
+			}
 		}
 		res.Outlines = append(res.Outlines, o)
 	}
@@ -318,8 +362,10 @@ func Merge(existing []model.CourseOutline, fetched map[string]model.CourseOutlin
 			if seen[key] || f.Dept == "" || f.Number == "" {
 				continue
 			}
-			f.Prerequisites = clean(f.Prerequisites)
-			f.Corequisites = clean(f.Corequisites)
+			for _, name := range CatalogFields {
+				ptr := fieldPtr(&f, name)
+				*ptr = clean(*ptr)
+			}
 			if f.Offerings == nil {
 				f.Offerings = []model.CourseOffering{}
 			}

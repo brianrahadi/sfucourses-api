@@ -150,3 +150,22 @@ func TestTermsAround(t *testing.T) {
 		}
 	}
 }
+
+func TestMergeCatalogFields(t *testing.T) {
+	existing := []model.CourseOutline{{Dept: "CMPT", Number: "225", Title: "Old Title", Description: "Old desc", Notes: "", Units: "3", Prerequisites: "CMPT 125."}}
+	fetched := map[string]model.CourseOutline{"CMPT 225": {
+		Title: "Data Structures and Programming", Description: "New desc ", Notes: "Students with credit for CMPT 226 may not take this course for further credit.",
+		Units: "3", Prerequisites: "CMPT 125.", Designation: "",
+	}}
+	r := Merge(existing, fetched, MergeOptions{Fields: CatalogFields})
+	o := r.Outlines[0]
+	if o.Title != "Data Structures and Programming" || o.Description != "New desc" || o.Notes == "" {
+		t.Errorf("catalog fields not refreshed: %+v", o)
+	}
+	if len(r.Changes) != 3 {
+		t.Errorf("changes = %+v, want title/description/notes", r.Changes)
+	}
+	if !ValidField("notes") || ValidField("offerings") {
+		t.Error("ValidField")
+	}
+}

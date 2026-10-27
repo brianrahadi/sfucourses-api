@@ -20,6 +20,7 @@ type Meta struct {
 	WithParsedPrereq int      `json:"withParsedPrereq"`
 	PrereqEdges      int      `json:"prereqEdges"`
 	CoreqEdges       int      `json:"coreqEdges"`
+	ExclusionEdges   int      `json:"exclusionEdges"`
 	Unparsed         int      `json:"unparsed"`
 }
 
@@ -33,6 +34,7 @@ func NewMeta(now time.Time, terms []string, st prereq.Stats) Meta {
 		WithParsedPrereq: st.WithParsedPrereq,
 		PrereqEdges:      st.PrereqEdges,
 		CoreqEdges:       st.CoreqEdges,
+		ExclusionEdges:   st.ExclusionEdges,
 		Unparsed:         len(st.Unparsed),
 	}
 }

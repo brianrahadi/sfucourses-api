@@ -13,6 +13,9 @@ definitions:
       lastDataUpdate:
         example: "2025-06-17T07:40:46Z"
         type: string
+      lastPrereqUpdate:
+        example: "2025-06-16T11:47:00Z"
+        type: string
       lastReviewUpdate:
         example: "2025-06-16T11:17:00Z"
         type: string
@@ -227,6 +230,49 @@ definitions:
       would_take_again:
         example: 85%
         type: string
+    type: object
+  model.PrereqGraphEntry:
+    properties:
+      corequisites:
+        description: Courses that may (or must) be taken in the same term.
+        example:
+        - ""
+        items:
+          type: string
+        type: array
+      dept:
+        example: CMPT
+        type: string
+      exclusions:
+        description: |-
+          Courses SFU won't give credit for alongside this one, or that may not be
+          taken concurrently with it (from "may not take for further credit" notes).
+        example:
+        - CMPT 201
+        items:
+          type: string
+        type: array
+      groups:
+        description: |-
+          Prerequisites as groups that must all be met, one course from each:
+          [["CMPT 225"], ["CMPT 295", "ENSC 254"]].
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      number:
+        example: "300"
+        type: string
+      prerequisites:
+        description: Every course code mentioned as a prerequisite.
+        example:
+        - CMPT 225
+        - CMPT 295
+        - ENSC 254
+        items:
+          type: string
+        type: array
     type: object
   model.PrereqMap:
     additionalProperties:
@@ -511,6 +557,30 @@ paths:
           schema:
             $ref: '#/definitions/main.ErrorResponse'
       summary: Get parsed course prerequisites
+      tags:
+      - Prerequisites
+  /v1/rest/prerequisites/graph:
+    get:
+      description: 'Returns one entry per course: the course codes it requires (prerequisites,
+        and as one-of groups), may take alongside (corequisites), and can''t get credit
+        for together with it (exclusions). Parsed from the catalog and refreshed weekly
+        from the newest SFU terms. Unit counts and permission clauses are omitted; use
+        /v1/rest/prerequisites for the full and/or logic.'
+      parameters:
+      - description: Only courses in this department (e.g., cmpt)
+        in: query
+        name: dept
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Prerequisite graph entries
+          schema:
+            items:
+              $ref: '#/definitions/model.PrereqGraphEntry'
+            type: array
+      summary: Get the course prerequisite graph
       tags:
       - Prerequisites
   /v1/rest/reviews/courses:

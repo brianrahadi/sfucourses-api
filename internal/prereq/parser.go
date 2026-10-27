@@ -121,10 +121,23 @@ func (p *Parser) parseSectionSplit(text string) (pre, concurrent *model.PrereqNo
 		return nil, nil
 	}
 	var parts, conc []*model.PrereqNode
+	type substitution struct {
+		alt     *model.PrereqNode
+		targets []string
+	}
+	var subs []substitution
 	lastDept := ""
 	for _, s := range sentences(text) {
 		s = dropClauses(s)
 		if s == "" {
+			continue
+		}
+		if loc := substitutedRe.FindStringIndex(s); loc != nil {
+			alt := finalize(parseTokens(p.tokenize(s[:loc[0]], &lastDept)))
+			targets := Leaves(finalize(parseTokens(p.tokenize(s[loc[1]:], &lastDept))))
+			if alt != nil && len(targets) > 0 {
+				subs = append(subs, substitution{alt, targets})
+			}
 			continue
 		}
 		toks := p.tokenize(s, &lastDept)
@@ -138,7 +151,48 @@ func (p *Parser) parseSectionSplit(text string) (pre, concurrent *model.PrereqNo
 			parts = append(parts, n)
 		}
 	}
-	return finalize(joinAnd(parts...)), finalize(joinAnd(conc...))
+	pre = finalize(joinAnd(parts...))
+	for _, sub := range subs {
+		pre = finalize(substitute(pre, sub.targets, sub.alt))
+	}
+	return pre, finalize(joinAnd(conc...))
+}
+
+// substitute makes alt an alternative to the smallest subtree whose leaves are
+// exactly targets ("... may be substituted for MATH 150 or MATH 151").
+// If no such subtree exists the tree is returned unchanged.
+func substitute(n *model.PrereqNode, targets []string, alt *model.PrereqNode) *model.PrereqNode {
+	if n == nil {
+		return nil
+	}
+	if sameSet(Leaves(n), targets) {
+		return orNode(n, alt)
+	}
+	if n.Type == "course" {
+		return n
+	}
+	c := *n
+	c.Children = make([]model.PrereqNode, len(n.Children))
+	for i := range n.Children {
+		c.Children[i] = *substitute(&n.Children[i], targets, alt)
+	}
+	return &c
+}
+
+func sameSet(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	m := make(map[string]bool, len(a))
+	for _, x := range a {
+		m[x] = true
+	}
+	for _, x := range b {
+		if !m[x] {
+			return false
+		}
+	}
+	return true
 }
 
 // dropClauses removes ';'-separated clauses that are recommendations or
@@ -171,6 +225,8 @@ var (
 
 	exclusionRe = regexp.MustCompile(`(?i)\b(?:may\s+not|must\s+not|not\s+be\s+taken|cannot|can\s+not|will\s+not|not\s+be\s+eligible|not\s+receive|for\s+further\s+credit|who\s+have\s+(?:taken|credit|received|completed)|before\s+enrolling|prior\s+to\s+enrolling|immediately\s+following|not\s+open\s+to)\b`)
 	recommendRe = regexp.MustCompile(`(?i)\brecommend`)
+	// "MATH 154 or 157 may be substituted for MATH 150 or 151."
+	substitutedRe = regexp.MustCompile(`(?i)\b(?:may|can)\s+be\s+(?:substituted|used|taken)\s+(?:for|in\s+place\s+of|instead\s+of)\b`)
 	// "Normally taken concurrently with ARCH 433" describes corequisites.
 	concurrentRe = regexp.MustCompile(`(?i)\bconcurrently\s+with\b`)
 
