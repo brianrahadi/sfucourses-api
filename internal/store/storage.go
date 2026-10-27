@@ -16,6 +16,7 @@ type Storage struct {
 	Outlines interface {
 		Get(context.Context, string, string) ([]model.CourseOutline, error)
 		GetPrereqMap() model.PrereqMap
+		GetPrereqGraph() []model.PrereqGraphEntry
 		ForceReload() error
 	}
 

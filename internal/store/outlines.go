@@ -14,9 +14,14 @@ import (
 	"github.com/samber/lo"
 )
 
+// PrereqOverridesPath holds hand-corrected prerequisite text for the few
+// catalog entries the parser can't read as written.
+const PrereqOverridesPath = "./internal/store/json/prereq_overrides.json"
+
 type OutlineStore struct {
 	cachedOutlines []CourseOutline
 	parsedPrereqs  PrereqMap
+	prereqGraph    []PrereqGraphEntry
 	lastLoaded     time.Time
 	mu             sync.RWMutex
 	filePath       string
@@ -49,9 +54,18 @@ func (s *OutlineStore) loadOutlines() error {
 		return fmt.Errorf("error parsing JSON: %v", err)
 	}
 
+	overrides, err := prereq.LoadOverrides(PrereqOverridesPath)
+	if err != nil {
+		// A broken overrides file shouldn't take the API down; parse without it.
+		fmt.Printf("warning: ignoring %s: %v\n", PrereqOverridesPath, err)
+		overrides = nil
+	}
+	built := prereq.Build(outlines, overrides)
+
 	s.mu.Lock()
 	s.cachedOutlines = outlines
-	s.parsedPrereqs = prereq.ParseAll(outlines)
+	s.parsedPrereqs = built.Trees
+	s.prereqGraph = built.Graph
 	s.lastLoaded = time.Now()
 	s.mu.Unlock()
 
@@ -107,4 +121,12 @@ func (s *OutlineStore) GetPrereqMap() PrereqMap {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.parsedPrereqs
+}
+
+// GetPrereqGraph returns the flat prerequisite/corequisite graph, one entry per
+// course in the catalog (courses without requirements have empty lists).
+func (s *OutlineStore) GetPrereqGraph() []PrereqGraphEntry {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.prereqGraph
 }

@@ -1,0 +1,14 @@
+{
+  "CRIM 480": {
+    "prerequisites": "CRIM 380.",
+    "reason": "Catalog typo: 'CRlM 380' (lower-case L)."
+  },
+  "IAT 895": {
+    "prerequisites": "Enrollment in the SIAT MA project-based option and completion of IAT 803, 804, and 806.",
+    "reason": "Catalog uses the program name SIAT as a course prefix; the courses are IAT 803/804/806."
+  },
+  "IAT 896": {
+    "prerequisites": "Enrollment in the SIAT MSc project-based option and completion of IAT 803, 804, and 806.",
+    "reason": "Catalog uses the program name SIAT as a course prefix; the courses are IAT 803/804/806."
+  }
+}

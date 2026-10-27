@@ -151,6 +151,26 @@ docker rm <container_id>
 
 The API will be available at `http://localhost:8080` once the container is running.
 
+## Prerequisite data
+
+Prerequisites are parsed from SFU's catalog text with a deterministic parser (`internal/prereq`) when the API loads `outlines.json`, so there is no generated file to keep in sync. Two endpoints expose it:
+
+- `GET /v1/rest/prerequisites` – full and/or trees per course, including `UNITS:`, `PERMISSION:` and `COREQUISITE:` leaves.
+- `GET /v1/rest/prerequisites/graph` – flat `{dept, number, prerequisites[], corequisites[]}` entries used by the sfucourses.com graph. Recommended courses and "may not take for further credit" exclusions are left out; retired subject aliases such as `FPA` in `CA (or FPA) 160` are dropped when a current alternative exists.
+
+**Weekly refresh.** `.github/workflows/prereqs.yml` runs every Monday (after the RMP refresh). `scripts/syncPrereqs` reads the next, current and previous term from the SFU outlines API, updates only the `prerequisites`/`corequisites` fields in `outlines.json` (and adds courses that are new), writes `prereq_meta.json` (served as `lastPrereqUpdate` on `/health`), and commits. The push redeploys the API, which then asks sfucourses.com to revalidate `/graph`. The job aborts without writing if the SFU API looks down, and the step summary lists every text change and any newly unparseable entries.
+
+```bash
+make sync-prereqs-dry   # report what would change
+make sync-prereqs       # update outlines.json and prereq_meta.json
+```
+
+**When the parser gets one wrong**, add the course to `internal/store/json/prereq_overrides.json` with corrected text (the parser still builds the tree) and a reason:
+
+```json
+{ "CRIM 480": { "prerequisites": "CRIM 380.", "reason": "Catalog typo: 'CRlM 380'" } }
+```
+
 <!-- ROADMAP -->
 
 ## Roadmap

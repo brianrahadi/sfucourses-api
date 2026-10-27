@@ -105,6 +105,7 @@ func (app *application) mount() http.Handler {
 
 	mux.HandleFunc("GET /v1/rest/outlines", app.getCourseOutlines)
 	mux.HandleFunc("GET /v1/rest/prerequisites", app.getPrerequisites)
+	mux.HandleFunc("GET /v1/rest/prerequisites/graph", app.getPrerequisiteGraph)
 	mux.HandleFunc("GET /v1/rest/sections", app.getSections)
 	mux.HandleFunc("GET /v1/rest/instructors", app.getInstructors)
 	mux.HandleFunc("GET /v1/rest/reviews/instructors", app.getAllInstructorReviews)
@@ -327,6 +328,13 @@ func (app *application) run(mux http.Handler) error {
 	// Start cron jobs
 	app.startCronJobs()
 
+	// Data commits (weekly prerequisite and review refreshes) redeploy the API;
+	// once the new instance is serving, ask the site to rebuild /graph from it.
+	go func() {
+		time.Sleep(90 * time.Second)
+		app.triggerRevalidation("revalidate-graph")
+	}()
+
 	srv := &http.Server{
 		Addr:         app.config.addr,
 		Handler:      app.middleware(mux),
@@ -348,6 +356,7 @@ type HealthResponse struct {
 	Version          string `json:"version,omitempty" example:"1.0.0"`
 	LastDataUpdate   string `json:"lastDataUpdate,omitempty" example:"2025-06-17T07:40:46Z"`
 	LastReviewUpdate string `json:"lastReviewUpdate,omitempty" example:"2025-06-16T11:17:00Z"`
+	LastPrereqUpdate string `json:"lastPrereqUpdate,omitempty" example:"2025-06-16T11:47:00Z"`
 }
 
 // OutlineResponse represents a course outline response
