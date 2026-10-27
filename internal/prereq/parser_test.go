@@ -508,11 +508,19 @@ func TestSubstitutionSentence(t *testing.T) {
 
 func TestGroups(t *testing.T) {
 	cases := map[string][][]string{
-		"CMPT 225 and (CMPT 295 or ENSC 254)": {{"CMPT 225"}, {"CMPT 295", "ENSC 254"}},
-		"MATH 150, 151, 154 or 157":           {{"MATH 150", "MATH 151", "MATH 154", "MATH 157"}},
-		"CMPT 125":                            {{"CMPT 125"}},
-		"45 units and CMPT 225":               {{"CMPT 225"}},
-		"45 units":                            {},
+		"CMPT 225 and (CMPT 295 or ENSC 254)":      {{"CMPT 225"}, {"CMPT 295", "ENSC 254"}},
+		"MATH 150, 151, 154 or 157":                {{"MATH 150", "MATH 151", "MATH 154", "MATH 157"}},
+		"CMPT 125":                                 {{"CMPT 125"}},
+		"45 units and CMPT 225":                    {{"CMPT 225"}},
+		"45 units":                                 {},
+		"CMPT 225 or permission of the instructor": {{"CMPT 225"}},
+		// OR of ANDs expands exactly
+		"(MACM 101 and (CMPT 125, CMPT 129 or CMPT 135)) or (ENSC 251 and ENSC 252)": {
+			{"MACM 101", "ENSC 251"}, {"MACM 101", "ENSC 252"},
+			{"CMPT 125", "CMPT 129", "CMPT 135", "ENSC 251"}, {"CMPT 125", "CMPT 129", "CMPT 135", "ENSC 252"},
+		},
+		// absorption: "A and (A or B)" is just A
+		"CMPT 120 and (CMPT 120 or CMPT 130)": {{"CMPT 120"}},
 	}
 	for raw, want := range cases {
 		got := Groups(Parse(raw))

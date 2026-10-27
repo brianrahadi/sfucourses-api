@@ -2,6 +2,7 @@ package prereq
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/brianrahadi/sfucourses-api/internal/model"
 )
@@ -52,16 +53,25 @@ func Exclusions(self string, texts ...string) []string {
 	return defaultParser.Exclusions(self, texts...)
 }
 
-// Groups summarises a prerequisite tree as a list of "one of" groups that must
-// all be satisfied: AND(CMPT 225, OR(CMPT 295, ENSC 254)) becomes
-// [[CMPT 225], [CMPT 295, ENSC 254]]. This is exact for the common shapes
-// (a course, an OR list, an AND of courses/OR lists); nested combinations are
-// flattened into the nearest group. Unit and permission conditions are omitted.
+// Groups returns a prerequisite tree as "one of" groups that must all be met
+// (conjunctive normal form), so it is exact for any and/or shape:
+//
+//	CMPT 225 and (CMPT 295 or ENSC 254)  ->  [[CMPT 225] [CMPT 295 ENSC 254]]
+//	(A and B) or C                       ->  [[A C] [B C]]
+//
+// Unit and permission leaves are omitted ("CMPT 225 or permission" gives
+// [[CMPT 225]]). Groups that contain another group are redundant and dropped.
+// If a tree would expand past maxGroups, each top-level part is flattened
+// into a single group instead.
 func Groups(n *model.PrereqNode) [][]string {
-	out := [][]string{}
 	if n == nil {
-		return out
+		return [][]string{}
 	}
+	if g, ok := cnf(n); ok {
+		return absorb(g)
+	}
+	// Fallback for very large trees: one group per top-level AND child.
+	out := [][]string{}
 	add := func(m *model.PrereqNode) {
 		if g := courseLeaves(m); len(g) > 0 {
 			out = append(out, g)
@@ -75,4 +85,104 @@ func Groups(n *model.PrereqNode) [][]string {
 	}
 	add(n)
 	return out
+}
+
+const maxGroups = 16
+
+// cnf converts a tree to clauses. A special leaf contributes an empty clause,
+// which acts as "false" inside an OR and is removed at the end.
+func cnf(n *model.PrereqNode) ([][]string, bool) {
+	switch n.Type {
+	case "course":
+		if strings.Contains(n.ID, ":") {
+			return [][]string{{}}, true
+		}
+		return [][]string{{n.ID}}, true
+	case "and":
+		var out [][]string
+		for i := range n.Children {
+			c, ok := cnf(&n.Children[i])
+			if !ok {
+				return nil, false
+			}
+			out = append(out, c...)
+			if len(out) > maxGroups {
+				return nil, false
+			}
+		}
+		return out, true
+	case "or":
+		out := [][]string{{}}
+		for i := range n.Children {
+			c, ok := cnf(&n.Children[i])
+			if !ok {
+				return nil, false
+			}
+			var next [][]string
+			for _, a := range out {
+				for _, b := range c {
+					next = append(next, unionOrdered(a, b))
+				}
+			}
+			if len(next) > maxGroups {
+				return nil, false
+			}
+			out = next
+		}
+		return out, true
+	}
+	return [][]string{}, true
+}
+
+func unionOrdered(a, b []string) []string {
+	out := append([]string{}, a...)
+	for _, x := range b {
+		if !contains(out, x) {
+			out = append(out, x)
+		}
+	}
+	return out
+}
+
+func contains(xs []string, x string) bool {
+	for _, y := range xs {
+		if y == x {
+			return true
+		}
+	}
+	return false
+}
+
+// absorb drops empty groups, duplicates, and any group that is a superset of
+// another (if one of {A} is required, one of {A, B} adds nothing).
+func absorb(groups [][]string) [][]string {
+	out := [][]string{}
+	for i, g := range groups {
+		if len(g) == 0 {
+			continue
+		}
+		redundant := false
+		for j, h := range groups {
+			if i == j || len(h) == 0 || len(h) > len(g) {
+				continue
+			}
+			if subset(h, g) && (len(h) < len(g) || j < i) {
+				redundant = true
+				break
+			}
+		}
+		if !redundant {
+			out = append(out, g)
+		}
+	}
+	return out
+}
+
+func subset(small, big []string) bool {
+	for _, x := range small {
+		if !contains(big, x) {
+			return false
+		}
+	}
+	return true
 }
