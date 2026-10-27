@@ -554,3 +554,15 @@ func TestExclusions(t *testing.T) {
 		eqSet(t, c.self, Exclusions(c.self, c.texts...), c.want...)
 	}
 }
+
+func TestBareSemicolonIsAnd(t *testing.T) {
+	raw := "ECON 103 with a minimum grade of C- or ECON 113 with a minimum grade of B-; ECON 105 with a minimum grade of C- or ECON 115 with a minimum grade of B-; MATH 150, MATH 151, MATH 154, or MATH 157, with a minimum grade of C-."
+	g := Groups(Parse(raw))
+	if len(g) != 3 {
+		t.Fatalf("groups = %v, want 3 required groups", g)
+	}
+	raw = "MATH 152 with a minimum grade of C; or MATH 155 or MATH 158"
+	if got := Parse(raw); got.Type != "or" {
+		t.Fatalf("'; or' should stay OR: %+v", got)
+	}
+}

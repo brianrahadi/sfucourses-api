@@ -14,7 +14,8 @@
 //     like "MATH 150, 151", "CA (or FPA) 160" and "EDUC 401/402".
 //  4. parse: build an and/or tree using SFU's list conventions
 //     ("A, B or C" is one OR list; "A, B, and C" one AND list; "one of ..."
-//     makes a list OR) with precedence  or  >  and  >  ", or"  >  ", and"  >  ";".
+//     makes a list OR) with precedence  or  >  and  >  ", or"  >  ", and"  >  ";"
+//     (a bare ";" is AND, "; or" is OR).
 package prereq
 
 import (
@@ -546,14 +547,16 @@ const (
 	sepCommaOr             // , or
 )
 
-// parseTokens parses one sentence: segments separated by ';' are OR-ed
-// unless the segment starts with "and".
+// parseTokens parses one sentence: segments separated by ';' are AND-ed
+// unless the segment starts with "or".
 func parseTokens(toks []token) *model.PrereqNode {
 	var result *model.PrereqNode
 	depth := 0
 	start := 0
 	flush := func(seg []token) {
-		op := "or"
+		// A bare ';' separates required items ("ECON 201; 60 units"); SFU
+		// writes alternatives as "; or".
+		op := "and"
 		// leading connector after ';' decides how the segment joins
 		for len(seg) > 0 && (seg[0].kind == tAnd || seg[0].kind == tOr || seg[0].kind == tComma) {
 			if seg[0].kind == tAnd {
@@ -628,7 +631,7 @@ func parseList(toks []token, oneOf bool) *model.PrereqNode {
 			push(&model.PrereqNode{Type: "course", ID: t.val})
 		case tAnd, tOr, tComma, tSemi:
 			if t.kind == tSemi {
-				t.kind = tOr
+				t.kind = tAnd
 			}
 			pending = append(pending, t.kind)
 		case tSlash:
