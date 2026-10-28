@@ -156,14 +156,16 @@ The API will be available at `http://localhost:8080` once the container is runni
 Prerequisites are parsed from SFU's catalog text with a deterministic parser (`internal/prereq`) when the API loads `outlines.json`, so there is no generated file to keep in sync. Two endpoints expose it:
 
 - `GET /v1/rest/prerequisites` – full and/or trees per course, including `UNITS:`, `PERMISSION:` and `COREQUISITE:` leaves.
-- `GET /v1/rest/prerequisites/graph` – flat `{dept, number, prerequisites[], corequisites[]}` entries used by the sfucourses.com graph. Recommended courses and "may not take for further credit" exclusions are left out; retired subject aliases such as `FPA` in `CA (or FPA) 160` are dropped when a current alternative exists.
+- `GET /v1/rest/prerequisites/graph` – per-course `{dept, number, prerequisites[], groups[][], corequisites[], exclusions[]}` used by sfucourses.com. `groups` lists what must be met, one course from each (`[["CMPT 225"], ["CMPT 295", "ENSC 254"]]`). `exclusions` comes from "Students with credit for X may not take this course for further credit" and "may not be taken concurrently" notes. Recommended courses are left out; retired subject aliases such as `FPA` in `CA (or FPA) 160` are dropped when a current alternative exists.
 
-**Weekly refresh.** `.github/workflows/prereqs.yml` runs every Monday (after the RMP refresh). `scripts/syncPrereqs` reads the next, current and previous term from the SFU outlines API, updates only the `prerequisites`/`corequisites` fields in `outlines.json` (and adds courses that are new), writes `prereq_meta.json` (served as `lastPrereqUpdate` on `/health`), and commits. The push redeploys the API, which then asks sfucourses.com to revalidate `/graph`. The job aborts without writing if the SFU API looks down, and the step summary lists every text change and any newly unparseable entries.
+**Weekly refresh.** `.github/workflows/prereqs.yml` runs every Monday (after the RMP refresh). `scripts/syncPrereqs` reads the next, current and previous term from the SFU outlines API and refreshes each course's catalog text in `outlines.json`: prerequisites, corequisites, title, description, notes, designation and units (`fetch-outlines` otherwise keeps the oldest wording it saw). It adds courses that are new, writes `prereq_meta.json` (served as `lastPrereqUpdate` on `/health`), and commits. The push redeploys the API, which then asks sfucourses.com to revalidate `/graph`. The job aborts without writing if the SFU API looks down; the step summary lists every change, and courses whose new text the parser can't read are posted to an open `prereq-parser` issue.
 
 ```bash
 make sync-prereqs-dry   # report what would change
 make sync-prereqs       # update outlines.json and prereq_meta.json
 ```
+
+**Parser changes** are checked by a golden test: `internal/prereq/testdata/catalog.json` is a frozen copy of the catalog text and `graph.golden.json` the expected output, one course per line. After an intended change, run `go test ./internal/prereq -run Golden -update` and review the diff.
 
 **When the parser gets one wrong**, add the course to `internal/store/json/prereq_overrides.json` with corrected text (the parser still builds the tree) and a reason:
 

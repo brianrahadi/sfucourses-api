@@ -1,4 +1,4 @@
-name: Refresh prerequisites
+name: Refresh catalog & prerequisites
 
 on:
   schedule:
@@ -25,6 +25,7 @@ concurrency:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   refresh:
@@ -41,7 +42,7 @@ jobs:
       - name: Test parser
         run: go test ./internal/prereq/... ./internal/prereqsync/... -count=1
 
-      - name: Sync requirement text from SFU
+      - name: Sync catalog text from SFU
         env:
           TERMS: ${{ inputs.terms }}
           ALLOW_CLEAR: ${{ inputs.allow_clear && 'true' || 'false' }}
@@ -49,6 +50,7 @@ jobs:
         run: |
           go run ./scripts/syncPrereqs \
             -terms "${TERMS}" \
+            -unparsed-out "${RUNNER_TEMP}/unparsed.md" \
             -allow-clear="${ALLOW_CLEAR}" \
             -dry-run="${DRY_RUN}"
 
@@ -62,6 +64,29 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898289+github-actions[bot]@users.noreply.github.com"
-          git commit -q -m "Refresh prerequisite data ($(date -u +%Y-%m-%d))"
+          git commit -q -m "Refresh catalog and prerequisite data ($(date -u +%Y-%m-%d))"
           git pull --rebase -q origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      # Courses whose new text the parser can't read get a tracking issue
+      # (one open issue, commented on each week) so an override gets added.
+      - name: Report newly unparsed courses
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          report="${RUNNER_TEMP}/unparsed.md"
+          if [ ! -s "$report" ]; then
+            echo "Nothing new for the parser to learn."
+            exit 0
+          fi
+          gh label create prereq-parser --color D93F0B \
+            --description "Prerequisite text the parser couldn't read" 2>/dev/null || true
+          issue=$(gh issue list --label prereq-parser --state open --limit 1 --json number --jq '.[0].number // empty')
+          if [ -n "$issue" ]; then
+            gh issue comment "$issue" --body-file "$report"
+          else
+            gh issue create --label prereq-parser \
+              --title "Prerequisite parser: courses need overrides" \
+              --body-file "$report"
+          fi

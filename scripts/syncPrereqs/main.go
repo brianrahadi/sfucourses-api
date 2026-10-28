@@ -1,5 +1,6 @@
-// sync-prereqs refreshes prerequisite/corequisite text in outlines.json from
-// the newest SFU terms, then reports how the prerequisite graph changed.
+// sync-prereqs refreshes course text in outlines.json (requirements, titles,
+// descriptions, notes, designation, units) from the newest SFU terms, then
+// reports how the prerequisite graph changed.
 //
 // The API parses requirements at load time (internal/prereq), so updating the
 // text is all that's needed for /v1/rest/prerequisites and
@@ -42,6 +43,8 @@ func main() {
 		maxFailRate   = flag.Float64("max-fail-rate", 0.2, "abort without writing if this fraction of requests fail")
 		dryRun        = flag.Bool("dry-run", false, "report changes without writing files")
 		summaryPath   = flag.String("summary", os.Getenv("GITHUB_STEP_SUMMARY"), "append a markdown report here")
+		fieldsFlag    = flag.String("fields", strings.Join(prereqsync.CatalogFields, ","), "comma-separated outline fields to refresh")
+		unparsedOut   = flag.String("unparsed-out", "", "write a markdown list of newly unparseable courses here (empty file if none)")
 	)
 	flag.Parse()
 	log.SetFlags(0)
@@ -49,6 +52,16 @@ func main() {
 	terms, err := parseTerms(*termsFlag)
 	if err != nil {
 		log.Fatal(err)
+	}
+	var fields []string
+	for _, f := range strings.Split(*fieldsFlag, ",") {
+		if f = strings.TrimSpace(f); f == "" {
+			continue
+		}
+		if !prereqsync.ValidField(f) {
+			log.Fatalf("unknown field %q (valid: %s)", f, strings.Join(prereqsync.CatalogFields, ", "))
+		}
+		fields = append(fields, f)
 	}
 
 	raw, err := os.ReadFile(*outlinesPath)
@@ -87,7 +100,7 @@ func main() {
 		log.Fatalf("%d/%d requests failed: too unreliable to trust; not writing", stats.Failures, stats.Requests)
 	}
 
-	merged := prereqsync.Merge(existing, fetched, prereqsync.MergeOptions{AddNew: *addNew, AllowClear: *allowClear})
+	merged := prereqsync.Merge(existing, fetched, prereqsync.MergeOptions{AddNew: *addNew, AllowClear: *allowClear, Fields: fields})
 	out, err := json.Marshal(merged.Outlines)
 	if err != nil {
 		log.Fatalf("marshal: %v", err)
@@ -98,6 +111,11 @@ func main() {
 	changed := !bytes.Equal(bytes.TrimSpace(raw), out)
 
 	report := buildReport(stats, merged, before, after, changed, *dryRun)
+	if *unparsedOut != "" {
+		if err := os.WriteFile(*unparsedOut, []byte(unparsedReport(newlyUnparsed(before, after), merged.Outlines)), 0o644); err != nil {
+			log.Fatalf("write %s: %v", *unparsedOut, err)
+		}
+	}
 	fmt.Print(report)
 	if *summaryPath != "" {
 		if f, err := os.OpenFile(*summaryPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644); err == nil {
@@ -135,7 +153,7 @@ func parseTerms(s string) ([]prereqsync.Term, error) {
 // buildReport renders a markdown summary for the job log / GitHub step summary.
 func buildReport(stats prereqsync.FetchStats, m prereqsync.MergeResult, before, after prereq.Result, changed, dry bool) string {
 	var b strings.Builder
-	title := "Prerequisite sync"
+	title := "Catalog & prerequisite sync"
 	if dry {
 		title += " (dry run)"
 	}
@@ -172,14 +190,32 @@ func buildReport(stats prereqsync.FetchStats, m prereqsync.MergeResult, before, 
 	fmt.Fprintf(&b, "**%d text changes**, **%d new courses**, **%d courses with changed graph edges**.\n\n",
 		len(m.Changes), len(m.Added), len(graphChanged))
 
-	if len(m.Changes) > 0 {
-		b.WriteString("<details><summary>Text changes</summary>\n\n| Course | Field | Old | New |\n|---|---|---|---|\n")
-		for i, c := range m.Changes {
+	var reqChanges []prereqsync.Change
+	otherByField := map[string][]string{}
+	for _, c := range m.Changes {
+		if c.Field == "prerequisites" || c.Field == "corequisites" {
+			reqChanges = append(reqChanges, c)
+		} else {
+			otherByField[c.Field] = append(otherByField[c.Field], c.Code)
+		}
+	}
+	if len(reqChanges) > 0 {
+		b.WriteString("<details><summary>Requirement text changes</summary>\n\n| Course | Field | Old | New |\n|---|---|---|---|\n")
+		for i, c := range reqChanges {
 			if i == 100 {
-				fmt.Fprintf(&b, "| … | | %d more | |\n", len(m.Changes)-100)
+				fmt.Fprintf(&b, "| … | | %d more | |\n", len(reqChanges)-100)
 				break
 			}
 			fmt.Fprintf(&b, "| %s | %s | %s | %s |\n", c.Code, c.Field, cell(c.Old), cell(c.New))
+		}
+		b.WriteString("\n</details>\n\n")
+	}
+	if len(otherByField) > 0 {
+		b.WriteString("<details><summary>Other catalog text changes</summary>\n\n")
+		for _, f := range prereqsync.CatalogFields {
+			if codes := otherByField[f]; len(codes) > 0 {
+				fmt.Fprintf(&b, "- **%s** (%d): %s\n", f, len(codes), truncList(codes, 60))
+			}
 		}
 		b.WriteString("\n</details>\n\n")
 	}
@@ -196,17 +232,7 @@ func buildReport(stats prereqsync.FetchStats, m prereqsync.MergeResult, before, 
 	}
 
 	// Newly unparseable text is where an override may be needed.
-	wasUnparsed := map[string]bool{}
-	for _, c := range before.Stats.Unparsed {
-		wasUnparsed[c] = true
-	}
-	var newly []string
-	for _, c := range after.Stats.Unparsed {
-		if !wasUnparsed[c] {
-			newly = append(newly, c)
-		}
-	}
-	if len(newly) > 0 {
+	if newly := newlyUnparsed(before, after); len(newly) > 0 {
 		fmt.Fprintf(&b, "⚠️ Newly unparsed (consider `internal/store/json/prereq_overrides.json`): %s\n\n", strings.Join(newly, ", "))
 	}
 	return b.String()
@@ -222,4 +248,47 @@ func cell(s string) string {
 		return "_(empty)_"
 	}
 	return s
+}
+
+// newlyUnparsed lists courses whose text mentions a course code but yields no
+// prerequisites now, and didn't have that problem before this sync.
+func newlyUnparsed(before, after prereq.Result) []string {
+	was := map[string]bool{}
+	for _, c := range before.Stats.Unparsed {
+		was[c] = true
+	}
+	var out []string
+	for _, c := range after.Stats.Unparsed {
+		if !was[c] {
+			out = append(out, c)
+		}
+	}
+	return out
+}
+
+// unparsedReport is the body of the GitHub issue the workflow opens; empty
+// when there is nothing to report.
+func unparsedReport(codes []string, outlines []model.CourseOutline) string {
+	if len(codes) == 0 {
+		return ""
+	}
+	text := map[string]string{}
+	for _, o := range outlines {
+		text[o.Dept+" "+o.Number] = o.Prerequisites
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, "The weekly sync found %d course(s) whose prerequisite text mentions a course code but produced no prerequisites:\n\n", len(codes))
+	b.WriteString("| Course | Prerequisite text |\n|---|---|\n")
+	for _, c := range codes {
+		fmt.Fprintf(&b, "| %s | %s |\n", c, cell(text[c]))
+	}
+	b.WriteString("\nFix by adding corrected text to `internal/store/json/prereq_overrides.json`, or teach the parser the pattern (`internal/prereq`) and refresh the golden file with `go test ./internal/prereq -run Golden -update`.\n")
+	return b.String()
+}
+
+func truncList(xs []string, n int) string {
+	if len(xs) <= n {
+		return strings.Join(xs, ", ")
+	}
+	return strings.Join(xs[:n], ", ") + fmt.Sprintf(", … %d more", len(xs)-n)
 }

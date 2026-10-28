@@ -52,6 +52,7 @@ type Stats struct {
 	WithParsedPrereq int      `json:"withParsedPrereq"`
 	PrereqEdges      int      `json:"prereqEdges"`
 	CoreqEdges       int      `json:"coreqEdges"`
+	ExclusionEdges   int      `json:"exclusionEdges"`
 	Unparsed         []string `json:"unparsed"` // text mentions a course code but nothing was extracted
 }
 
@@ -102,11 +103,14 @@ func Build(outlines []model.CourseOutline, overrides Overrides) Result {
 			res.Trees[code] = *tree
 		}
 
+		livePre := dropRetiredAlternatives(req.Prereq, deptSet)
 		entry := model.PrereqGraphEntry{
 			Dept:          strings.ToUpper(o.Dept),
 			Number:        strings.ToUpper(o.Number),
-			Prerequisites: courseLeaves(dropRetiredAlternatives(req.Prereq, deptSet)),
+			Prerequisites: courseLeaves(livePre),
+			Groups:        Groups(livePre),
 			Corequisites:  courseLeaves(dropRetiredAlternatives(req.Coreq, deptSet)),
+			Exclusions:    liveOnly(p.Exclusions(code, o.Notes, o.Description, preText), deptSet),
 		}
 		if len(entry.Prerequisites) > 0 {
 			res.Stats.WithParsedPrereq++
@@ -115,6 +119,7 @@ func Build(outlines []model.CourseOutline, overrides Overrides) Result {
 		}
 		res.Stats.PrereqEdges += len(entry.Prerequisites)
 		res.Stats.CoreqEdges += len(entry.Corequisites)
+		res.Stats.ExclusionEdges += len(entry.Exclusions)
 		res.Graph = append(res.Graph, entry)
 	}
 	sort.Slice(res.Graph, func(i, j int) bool {
@@ -209,4 +214,15 @@ func dropRetiredAlternatives(n *model.PrereqNode, liveDepts map[string]bool) *mo
 	}
 	c.Children = kept
 	return &c
+}
+
+// liveOnly drops codes in subjects that no longer exist ("BPK (or KIN) 805").
+func liveOnly(codes []string, liveDepts map[string]bool) []string {
+	out := codes[:0]
+	for _, c := range codes {
+		if liveDepts[strings.SplitN(c, " ", 2)[0]] {
+			out = append(out, c)
+		}
+	}
+	return out
 }

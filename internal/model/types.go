@@ -231,14 +231,21 @@ type PrereqNode struct {
 // PrereqMap maps course codes to their parsed prerequisite trees.
 type PrereqMap map[string]PrereqNode
 
-// PrereqGraphEntry is one course in the flat prerequisite graph: the course
-// codes it depends on (prerequisites) and may take alongside (corequisites).
+// PrereqGraphEntry is one course in the flat prerequisite graph.
 // Unit counts and permission clauses are omitted; see PrereqNode for full logic.
 type PrereqGraphEntry struct {
-	Dept          string   `json:"dept" example:"CMPT"`
-	Number        string   `json:"number" example:"300"`
+	Dept   string `json:"dept" example:"CMPT"`
+	Number string `json:"number" example:"300"`
+	// Every course code mentioned as a prerequisite.
 	Prerequisites []string `json:"prerequisites" example:"CMPT 225,CMPT 295,ENSC 254"`
-	Corequisites  []string `json:"corequisites" example:""`
+	// Prerequisites as groups that must all be met, one course from each:
+	// [["CMPT 225"], ["CMPT 295", "ENSC 254"]].
+	Groups [][]string `json:"groups"`
+	// Courses that may (or must) be taken in the same term.
+	Corequisites []string `json:"corequisites" example:""`
+	// Courses SFU won't give credit for alongside this one, or that may not be
+	// taken concurrently with it (from "may not take for further credit" notes).
+	Exclusions []string `json:"exclusions" example:"CMPT 201"`
 }
 
 // CourseOutlineWithPrereqs is a CourseOutline with parsed prerequisite data.
