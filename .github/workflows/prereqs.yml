@@ -1,0 +1,67 @@
+name: Refresh prerequisites
+
+on:
+  schedule:
+    # Mondays 11:47 UTC (04:47 Vancouver), 30 min after the RMP refresh
+    - cron: "47 11 * * 1"
+  workflow_dispatch:
+    inputs:
+      terms:
+        description: "Terms to read, newest first (e.g. 2027-spring,2026-fall). Blank = next, current, previous."
+        type: string
+        default: ""
+      allow_clear:
+        description: "Let an empty upstream field erase existing prerequisite text"
+        type: boolean
+        default: false
+      dry_run:
+        description: "Report only, don't commit"
+        type: boolean
+        default: false
+
+concurrency:
+  group: prereqs
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "1.23"
+
+      # Don't publish data parsed by a broken parser.
+      - name: Test parser
+        run: go test ./internal/prereq/... ./internal/prereqsync/... -count=1
+
+      - name: Sync requirement text from SFU
+        env:
+          TERMS: ${{ inputs.terms }}
+          ALLOW_CLEAR: ${{ inputs.allow_clear && 'true' || 'false' }}
+          DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+        run: |
+          go run ./scripts/syncPrereqs \
+            -terms "${TERMS}" \
+            -allow-clear="${ALLOW_CLEAR}" \
+            -dry-run="${DRY_RUN}"
+
+      - name: Commit updated data
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git add internal/store/json/outlines.json internal/store/json/prereq_meta.json
+          if git diff --cached --quiet; then
+            echo "No prerequisite changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898289+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "Refresh prerequisite data ($(date -u +%Y-%m-%d))"
+          git pull --rebase -q origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

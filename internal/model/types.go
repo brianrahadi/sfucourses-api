@@ -231,6 +231,16 @@ type PrereqNode struct {
 // PrereqMap maps course codes to their parsed prerequisite trees.
 type PrereqMap map[string]PrereqNode
 
+// PrereqGraphEntry is one course in the flat prerequisite graph: the course
+// codes it depends on (prerequisites) and may take alongside (corequisites).
+// Unit counts and permission clauses are omitted; see PrereqNode for full logic.
+type PrereqGraphEntry struct {
+	Dept          string   `json:"dept" example:"CMPT"`
+	Number        string   `json:"number" example:"300"`
+	Prerequisites []string `json:"prerequisites" example:"CMPT 225,CMPT 295,ENSC 254"`
+	Corequisites  []string `json:"corequisites" example:""`
+}
+
 // CourseOutlineWithPrereqs is a CourseOutline with parsed prerequisite data.
 type CourseOutlineWithPrereqs struct {
 	CourseOutline

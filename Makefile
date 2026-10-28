@@ -41,6 +41,15 @@ sync-instructors:
 fetch-instructors:
 	go run scripts/fetchInstructors/main.go
 
+# Refresh prerequisite/corequisite text from the newest SFU terms (runs weekly in CI).
+.PHONY: sync-prereqs
+sync-prereqs:
+	go run ./scripts/syncPrereqs
+
+.PHONY: sync-prereqs-dry
+sync-prereqs-dry:
+	go run ./scripts/syncPrereqs -dry-run
+
 .PHONY: gen-docs
 gen-docs:
 	@swag init -g ./api/main.go -d cmd,internal && swag fmt
