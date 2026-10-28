@@ -13,6 +13,7 @@ import (
 
 	"github.com/brianrahadi/sfucourses-api/internal/model"
 	. "github.com/brianrahadi/sfucourses-api/internal/model"
+	"github.com/brianrahadi/sfucourses-api/internal/names"
 	"github.com/samber/lo"
 	mo "github.com/samber/mo"
 )
@@ -205,6 +206,32 @@ func processSectionDetails(year string, term string, dept string, number string,
 	return nil
 }
 
+// cleanSectionInstructors strips roles from instructor names and splits
+// entries naming several people (see internal/names). Placeholders such as
+// "Sessional" are kept as-is: on a section they still say something.
+func cleanSectionInstructors(raw []Instructor) []Instructor {
+	out := []Instructor{}
+	seen := map[string]bool{}
+	for _, inst := range raw {
+		cleaned := names.Clean(inst.Name)
+		if len(cleaned) == 0 {
+			cleaned = []string{strings.TrimSpace(inst.Name)}
+		}
+		for i, name := range cleaned {
+			if seen[name] {
+				continue
+			}
+			seen[name] = true
+			email := inst.Email
+			if i > 0 {
+				email = "" // the email belongs to the entry, not each person in it
+			}
+			out = append(out, Instructor{Name: name, Email: email})
+		}
+	}
+	return out
+}
+
 // ToCourseWithSectionDetails converts an array of SectionDetailRaw to CourseWithSectionDetails
 func ToCourseWithSectionDetails(sectionDetailRawArr []SectionDetailRaw) mo.Option[CourseWithSectionDetails] {
 	if len(sectionDetailRawArr) == 0 {
@@ -218,10 +245,7 @@ func ToCourseWithSectionDetails(sectionDetailRawArr []SectionDetailRaw) mo.Optio
 	courseWithSections.Term = sectionDetailRawArr[0].Info.Term
 
 	sectionDetails := lo.Map(sectionDetailRawArr, func(sectionDetailRaw SectionDetailRaw, _ int) SectionDetail {
-		instructors := sectionDetailRaw.Instructor
-		if instructors == nil {
-			instructors = []Instructor{}
-		}
+		instructors := cleanSectionInstructors(sectionDetailRaw.Instructor)
 
 		schedules := sectionDetailRaw.CourseSchedule
 		if schedules == nil {
