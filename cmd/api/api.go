@@ -157,7 +157,7 @@ func (app *application) middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		serveCacheable(next, w, r)
 	}), 60*time.Second, "Request timed out")
 }
 

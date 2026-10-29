@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -53,76 +52,42 @@ func normalizeCourseCode(courseCode string) string {
 	return strings.ReplaceAll(strings.ToUpper(courseCode), " ", "")
 }
 
-// findInstructorFile searches for an instructor file across all departments
+// findInstructorFile finds an instructor's review file across all departments.
+// When several departments have a matching file, the first department in
+// alphabetical order wins.
 func findInstructorFile(instructorName string) (string, error) {
-	// Try different variations of the name
 	variations := []string{
 		normalizeName(instructorName),
 		strings.ReplaceAll(instructorName, " ", "_"),
 		strings.ReplaceAll(instructorName, " ", ""),
 	}
 
-	// Try to find the file by checking each department
-	departments, err := os.ReadDir(instructorReviewDataDir)
+	index, err := instructorReviewFiles.get()
 	if err != nil {
 		return "", err
 	}
 
-	for _, dept := range departments {
-		if dept.IsDir() {
-			deptPath := filepath.Join(instructorReviewDataDir, dept.Name())
-			files, err := os.ReadDir(deptPath)
-			if err != nil {
-				continue
-			}
-
-			for _, file := range files {
-				if !file.IsDir() && strings.HasSuffix(file.Name(), ".json") {
-					filename := strings.TrimSuffix(file.Name(), ".json")
-
-					for _, variation := range variations {
-						if strings.EqualFold(filename, variation) {
-							return filepath.Join(deptPath, file.Name()), nil
-						}
-					}
-				}
-			}
-		}
+	matches := index.lookup(variations)
+	if len(matches) == 0 {
+		return "", errors.New("instructor not found")
 	}
-
-	return "", errors.New("instructor not found")
+	return matches[0], nil
 }
 
-// findCourseFile searches for a course file across all departments
+// findCourseFile finds a course's review file.
 func findCourseFile(courseCode string) (string, error) {
-	variations := []string{
-		normalizeCourseCode(courseCode),
-		strings.ToUpper(courseCode),
-		strings.ToLower(courseCode),
-	}
-
-	entries, err := os.ReadDir(courseReviewDataDir)
+	files, err := findAllCourseFiles(courseCode)
 	if err != nil {
 		return "", err
 	}
-
-	for _, entry := range entries {
-		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".json") {
-			filename := strings.TrimSuffix(entry.Name(), ".json")
-
-			for _, variation := range variations {
-				if strings.EqualFold(filename, variation) {
-					return filepath.Join(courseReviewDataDir, entry.Name()), nil
-				}
-			}
-		}
+	if len(files) == 0 {
+		return "", errors.New("course not found")
 	}
-
-	return "", errors.New("course not found")
+	return files[0], nil
 }
 
-// findAllCourseFiles searches for all course JSON files matching the course code across all department directories.
-// It returns all matching files to allow for data aggregation.
+// findAllCourseFiles returns every course review file matching the course
+// code, so their data can be aggregated.
 func findAllCourseFiles(courseCode string) ([]string, error) {
 	variations := []string{
 		normalizeCourseCode(courseCode),
@@ -130,27 +95,11 @@ func findAllCourseFiles(courseCode string) ([]string, error) {
 		strings.ToLower(courseCode),
 	}
 
-	var matchingFiles []string
-
-	entries, err := os.ReadDir(courseReviewDataDir)
+	index, err := courseReviewFiles.get()
 	if err != nil {
 		return nil, err
 	}
-
-	for _, entry := range entries {
-		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".json") {
-			filename := strings.TrimSuffix(entry.Name(), ".json")
-
-			for _, variation := range variations {
-				if strings.EqualFold(filename, variation) {
-					matchingFiles = append(matchingFiles, filepath.Join(courseReviewDataDir, entry.Name()))
-					break
-				}
-			}
-		}
-	}
-
-	return matchingFiles, nil
+	return index.lookup(variations), nil
 }
 
 // @Summary		Get all instructor reviews overview

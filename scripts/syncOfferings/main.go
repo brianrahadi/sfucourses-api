@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/brianrahadi/sfucourses-api/internal/model"
+	"github.com/brianrahadi/sfucourses-api/internal/names"
 	internalUtils "github.com/brianrahadi/sfucourses-api/internal/utils"
 	utils "github.com/brianrahadi/sfucourses-api/scripts"
 	"github.com/samber/lo"
@@ -94,9 +95,9 @@ func main() {
 				newInstructorNames := lo.Map(sectionDetail.Instructors, func(instructor model.Instructor, _ int) string { return instructor.Name })
 				instructorNames = append(instructorNames, newInstructorNames...)
 			}
-			instructorNames = lo.Uniq(instructorNames)
-			instructorNames = lo.Filter(instructorNames, func(name string, _ int) bool { return name != "" })
-			newOffering.Instructors = instructorNames
+			// Drops placeholders ("TBA", "Sessional"), strips roles and splits
+			// entries naming several people.
+			newOffering.Instructors = names.CleanAll(instructorNames)
 			outlineKey := fmt.Sprintf("%s-%s", course.Dept, course.Number)
 			outline := outlineMap[outlineKey]
 			outline.Offerings = append(outline.Offerings, newOffering)
