@@ -1,12 +1,12 @@
 {
-  "lastUpdated": "2026-11-02T20:54:04Z",
+  "lastUpdated": "2026-11-09T21:40:30Z",
   "terms": [
     "2027-spring",
     "2026-fall",
     "2026-summer"
   ],
-  "courses": 3872,
-  "withPrereqText": 2577,
+  "courses": 3874,
+  "withPrereqText": 2579,
   "withParsedPrereq": 1664,
   "prereqEdges": 4158,
   "coreqEdges": 256,
